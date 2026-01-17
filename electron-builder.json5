@@ -32,8 +32,8 @@
   "publish": [
     {
       "provider": "github",
-      "owner": "username",
-      "repo": "repo"
+      "owner": "ggtiger",
+      "repo": "edge-base-framework"
     }
   ]
 }
