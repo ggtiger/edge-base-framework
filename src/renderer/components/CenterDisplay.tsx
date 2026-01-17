@@ -55,17 +55,17 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
 
   return (
     <div className="col-span-6 flex flex-col h-full min-h-0">
-      <GlassPanel className="flex flex-col h-full overflow-hidden relative border border-white/5">
+      <GlassPanel className="flex flex-col h-full overflow-hidden relative border border-slate-200 dark:border-white/5">
         {/* Top Wheel Selectors */}
         <div className="grid grid-cols-4 gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border-b border-slate-200 dark:border-white/10 backdrop-blur-sm z-20 flex-shrink-0">
           {wheels.map((wheel) => (
             <button
               key={wheel.id}
               onClick={() => onSelectWheel(wheel.id)}
-              className={`btn-futuristic py-2 rounded text-xs font-bold tracking-wide transition-all
+              className={`flex items-center justify-center py-2 border rounded text-xs font-bold tracking-wide transition-all shadow-md
                 ${activeWheel === wheel.id 
-                  ? 'bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)] border-blue-400/50' 
-                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-slate-900 hover:border-blue-500/50 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700/50 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:border-blue-500/50'
+                  ? 'bg-blue-600 text-white border-blue-500 shadow-blue-500/40' 
+                  : 'bg-white text-slate-900 border-slate-400 hover:bg-slate-50 hover:text-slate-900 hover:border-blue-500/50 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700/50 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:border-blue-500/50'
                 }`}
             >
               {wheel.label}
@@ -97,10 +97,10 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
             {/* Overlays: Measurements */}
             {/* Front */}
             <div className="absolute top-4 inset-x-0 flex gap-4 justify-center z-20 pointer-events-none">
-              <div className="bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
+              <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-cyan-200 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
                 {formatAngle(frontLeft)}
               </div>
-              <div className="bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
+              <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-cyan-200 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
                 {formatAngle(frontRight)}
               </div>
             </div>
@@ -117,10 +117,10 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
 
             {/* Rear */}
             <div className="absolute bottom-4 inset-x-0 flex gap-4 justify-center z-20 pointer-events-none">
-              <div className="bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
+              <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-cyan-200 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
                 {formatAngle(rearLeft)}
               </div>
-              <div className="bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
+              <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-cyan-200 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
                 {formatAngle(rearRight)}
               </div>
             </div>
@@ -129,22 +129,22 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
         </div>
 
         {/* Bottom Actions */}
-        <div className="grid grid-cols-3 gap-3 p-4 bg-white/5 dark:bg-slate-900/30 border-t border-white/10 backdrop-blur-sm z-20 flex-shrink-0">
+        <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50 dark:bg-slate-900/30 border-t border-slate-200 dark:border-white/10 backdrop-blur-sm z-20 flex-shrink-0">
           <button
             onClick={() => onAction('hm')}
-            className="py-3 bg-slate-800 border border-slate-700 rounded text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-700 hover:border-slate-600 transition-all shadow-sm"
+            className="flex items-center justify-center py-3 bg-white dark:bg-slate-800 border border-slate-400 dark:border-slate-700 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-500 dark:hover:border-slate-600 transition-all shadow-md hover:shadow-lg"
           >
             外倾丝杆复位
           </button>
           <button
             onClick={() => onAction('angle0')}
-            className="py-3 bg-slate-800 border border-slate-700 rounded text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-700 hover:border-slate-600 transition-all shadow-sm"
+            className="flex items-center justify-center py-3 bg-white dark:bg-slate-800 border border-slate-400 dark:border-slate-700 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-500 dark:hover:border-slate-600 transition-all shadow-md hover:shadow-lg"
           >
             回零
           </button>
           <button
             onClick={() => onAction('zero')}
-            className="py-3 bg-slate-800 border border-slate-700 rounded text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-700 hover:border-slate-600 transition-all shadow-sm"
+            className="flex items-center justify-center py-3 bg-white dark:bg-slate-800 border border-slate-400 dark:border-slate-700 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-500 dark:hover:border-slate-600 transition-all shadow-md hover:shadow-lg"
           >
             置零
           </button>

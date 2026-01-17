@@ -89,7 +89,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
     if (status === 'running' || isCurrent) {
       return `${base} border-red-600/80 dark:border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.18)]`;
     }
-    return `${base} border-slate-300 dark:border-slate-700 hover:bg-slate-800`;
+    return `${base} border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800`;
   };
 
   const canOperate = isConnected && !disabled;
@@ -109,13 +109,13 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
                 <div className="w-1 h-3 bg-blue-500 rounded-sm shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
-                <span className="text-[10px] font-bold tracking-widest text-slate-400">自由测量 / FREE MEASURE</span>
+                <span className="text-[10px] font-bold tracking-widest text-slate-600 dark:text-slate-400">自由测量 / FREE MEASURE</span>
             </div>
             <span className="material-icons text-xs text-slate-600">tune</span>
         </div>
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <label className="text-xs w-10 opacity-70 font-medium shrink-0">前束°</label>
+            <label className="text-xs w-10 opacity-70 font-medium shrink-0 text-slate-700 dark:text-slate-300">前束°</label>
             <input 
               type="text" 
               value={freeMeasure.toe}
@@ -124,22 +124,22 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 openKeypad('自由测量 - 前束', freeMeasure.toe, (val) => onChangeFreeMeasure({ ...freeMeasure, toe: val }))
               }
               placeholder="0.00" 
-              className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-sm h-8 px-2 font-display focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all cursor-pointer hover:border-blue-500/50"
+              className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-sm h-8 px-2 font-display focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all cursor-pointer hover:border-blue-500/50 text-slate-900 dark:text-white"
             />
             <button
               disabled={!canOperate}
               onClick={onStartManualToe}
-              className={`px-4 py-1.5 text-white text-xs rounded border transition-all shrink-0 ${
+              className={`flex items-center justify-center px-4 py-1.5 text-white text-xs rounded border transition-all shrink-0 ${
                 canOperate
-                  ? 'bg-blue-600 hover:bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.4)] border-blue-400/50'
-                  : 'bg-slate-700 border-slate-600 opacity-50 cursor-not-allowed'
+                  ? 'bg-blue-600 hover:bg-blue-500 shadow-md hover:shadow-lg border-blue-500'
+                  : 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500 opacity-50 cursor-not-allowed'
               }`}
             >
               启动
             </button>
           </div>
           <div className="flex items-center gap-3">
-            <label className="text-xs w-10 opacity-70 font-medium shrink-0">外倾°</label>
+            <label className="text-xs w-10 opacity-70 font-medium shrink-0 text-slate-700 dark:text-slate-300">外倾°</label>
             <input 
               type="text" 
               value={freeMeasure.camber}
@@ -148,15 +148,15 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 openKeypad('自由测量 - 外倾', freeMeasure.camber, (val) => onChangeFreeMeasure({ ...freeMeasure, camber: val }))
               }
               placeholder="0.00" 
-              className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-sm h-8 px-2 font-display focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all cursor-pointer hover:border-blue-500/50"
+              className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-sm h-8 px-2 font-display focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all cursor-pointer hover:border-blue-500/50 text-slate-900 dark:text-white"
             />
             <button
               disabled={!canOperate}
               onClick={onStartManualCamber}
-              className={`px-4 py-1.5 text-white text-xs rounded border transition-all shrink-0 ${
+              className={`flex items-center justify-center px-4 py-1.5 text-white text-xs rounded border transition-all shrink-0 ${
                 canOperate
-                  ? 'bg-blue-600 hover:bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.4)] border-blue-400/50'
-                  : 'bg-slate-700 border-slate-600 opacity-50 cursor-not-allowed'
+                  ? 'bg-blue-600 hover:bg-blue-500 shadow-md hover:shadow-lg border-blue-500'
+                  : 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500 opacity-50 cursor-not-allowed'
               }`}
             >
               启动
@@ -204,10 +204,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             <button
               disabled={!canOperate}
               onClick={onStartForward}
-              className={`py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
                 canOperate
-                  ? 'bg-blue-600 hover:bg-blue-500 text-white border-blue-400/50 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
-                  : 'bg-slate-700 text-slate-300 border-slate-600 opacity-50 cursor-not-allowed'
+                  ? 'bg-blue-600 hover:bg-blue-500 text-white border-blue-500 shadow-md hover:shadow-lg'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-300 border-slate-300 dark:border-slate-600 opacity-50 cursor-not-allowed'
               }`}
             >
               启动正测
@@ -215,10 +215,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             <button
               disabled={!canOperate}
               onClick={onSkipForward}
-              className={`py-2 border rounded text-[10px] sm:text-xs transition-all ${
+              className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs transition-all shadow-md ${
                 canOperate
-                  ? 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-white'
-                  : 'bg-slate-800 border-slate-700 text-slate-600 opacity-50 cursor-not-allowed'
+                  ? 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-700 text-slate-900 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
+                  : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed'
               }`}
             >
               跳过
@@ -226,10 +226,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             <button
               disabled={!canOperate}
               onClick={onStopForward}
-              className={`py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap shadow-md ${
                 canOperate
-                  ? 'bg-red-900/20 text-red-500 border-red-500/30 hover:bg-red-600 hover:text-white hover:border-red-500'
-                  : 'bg-slate-800 text-slate-600 border-slate-700 opacity-50 cursor-not-allowed'
+                  ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-500 border-red-400 dark:border-red-500/30 hover:bg-red-200 dark:hover:bg-red-600 hover:text-red-900 dark:hover:text-white hover:border-red-500 dark:hover:border-red-500'
+                  : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border-slate-300 dark:border-slate-700 opacity-50 cursor-not-allowed'
               }`}
             >
               停止正测
@@ -241,10 +241,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             <button
               disabled={!canOperate}
               onClick={onStartReverse}
-              className={`py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
                 canOperate
-                  ? 'bg-blue-600 hover:bg-blue-500 text-white border-blue-400/50 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
-                  : 'bg-slate-700 text-slate-300 border-slate-600 opacity-50 cursor-not-allowed'
+                  ? 'bg-blue-600 hover:bg-blue-500 text-white border-blue-500 shadow-md hover:shadow-lg'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-300 border-slate-300 dark:border-slate-600 opacity-50 cursor-not-allowed'
               }`}
             >
               启动回测
@@ -252,10 +252,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             <button
               disabled={!canOperate}
               onClick={onSkipReverse}
-              className={`py-2 border rounded text-[10px] sm:text-xs transition-all ${
+              className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs transition-all shadow-md ${
                 canOperate
-                  ? 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-white'
-                  : 'bg-slate-800 border-slate-700 text-slate-600 opacity-50 cursor-not-allowed'
+                  ? 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-700 text-slate-900 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
+                  : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed'
               }`}
             >
               跳过
@@ -263,10 +263,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             <button
               disabled={!canOperate}
               onClick={onStopReverse}
-              className={`py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
+              className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap shadow-md ${
                 canOperate
-                  ? 'bg-red-900/20 text-red-500 border-red-500/30 hover:bg-red-600 hover:text-white hover:border-red-500'
-                  : 'bg-slate-800 text-slate-600 border-slate-700 opacity-50 cursor-not-allowed'
+                  ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-500 border-red-400 dark:border-red-500/30 hover:bg-red-200 dark:hover:bg-red-600 hover:text-red-900 dark:hover:text-white hover:border-red-500 dark:hover:border-red-500'
+                  : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border-slate-300 dark:border-slate-700 opacity-50 cursor-not-allowed'
               }`}
             >
               停止回测
@@ -284,17 +284,17 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             <button
               disabled={!isConnected}
               onClick={onLockParams}
-              className={`py-2 border rounded text-xs transition shadow-sm ${
+              className={`flex items-center justify-center py-2 border rounded text-xs transition shadow-md ${
                 isConnected
-                  ? 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white'
-                  : 'bg-slate-800 border-slate-700 text-slate-600 opacity-50 cursor-not-allowed'
+                  ? 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-600 text-slate-900 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
+                  : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed'
               }`}
             >
               {paramsLocked ? '解锁' : '设置'}
             </button>
             <button
               onClick={onCancel}
-              className="py-2 bg-transparent border border-slate-700/50 text-slate-500 rounded text-xs hover:bg-slate-800 hover:text-slate-300 transition"
+              className="flex items-center justify-center py-2 bg-white dark:bg-slate-800 border border-slate-400 dark:border-slate-700/50 text-slate-900 dark:text-slate-300 rounded text-xs hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition shadow-md"
             >
               取消
             </button>
@@ -309,7 +309,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 value={kingpin}
                 readOnly
                 onClick={() => openKeypad('主销模拟', kingpin, onChangeKingpin)}
-                className="flex-grow bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-sm py-1 px-2 font-display focus:ring-1 focus:ring-primary outline-none cursor-pointer hover:border-blue-500/50 transition-all"
+                className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-sm py-1 px-2 font-display focus:ring-1 focus:ring-primary outline-none cursor-pointer hover:border-blue-500/50 transition-all"
               />
             </div>
           </div>

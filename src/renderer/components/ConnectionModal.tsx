@@ -39,30 +39,30 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({ initialIp, ini
         
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">IP 地址</label>
+            <label className="block text-xs font-medium text-slate-900 dark:text-slate-500 mb-1">IP 地址</label>
             <input
               type="text"
               value={ip}
               onChange={(e) => setIp(e.target.value)}
-              className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-3 py-2 text-slate-900 dark:text-white focus:border-primary outline-none transition-colors font-mono text-sm"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-700 rounded px-3 py-2 text-slate-900 dark:text-white focus:border-primary outline-none transition-colors font-mono text-sm"
               placeholder="127.0.0.1"
             />
           </div>
           
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">端口号</label>
+            <label className="block text-xs font-medium text-slate-900 dark:text-slate-500 mb-1">端口号</label>
             <input
               type="number"
               value={port}
               onChange={(e) => setPort(e.target.value)}
-              className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-3 py-2 text-slate-900 dark:text-white focus:border-primary outline-none transition-colors font-mono text-sm"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-700 rounded px-3 py-2 text-slate-900 dark:text-white focus:border-primary outline-none transition-colors font-mono text-sm"
               placeholder="10001"
             />
           </div>
 
           <button
             type="submit"
-            className="mt-4 bg-primary hover:bg-blue-600 text-white font-medium py-2.5 px-4 rounded transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2"
+            className="mt-4 bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 px-4 rounded transition-all shadow-md hover:shadow-lg border border-blue-500 active:scale-95 flex items-center justify-center gap-2"
           >
             <span className="material-icons text-sm">refresh</span>
             重试连接

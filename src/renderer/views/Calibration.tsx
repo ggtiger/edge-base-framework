@@ -668,7 +668,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
               <button
                 onClick={() => setHelpIndex(prev => Math.max(0, prev - 1))}
                 disabled={helpIndex <= 0}
-                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm font-medium border ${
+                className={`px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm font-medium border ${
                   helpIndex <= 0
                     ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed dark:bg-slate-800/50 dark:text-slate-500 dark:border-slate-800'
                     : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700'
@@ -686,7 +686,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
               <button
                 onClick={() => setHelpIndex(prev => Math.min(helpSlides.length - 1, prev + 1))}
                 disabled={helpIndex >= helpSlides.length - 1}
-                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm font-medium border ${
+                className={`px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm font-medium border ${
                   helpIndex >= helpSlides.length - 1
                     ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed dark:bg-slate-800/50 dark:text-slate-500 dark:border-slate-800'
                     : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700'
@@ -730,10 +730,10 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
           </button> */}
           <button
             onClick={() => (testRunning ? stopTest() : startTest())}
-            className={`px-4 py-2 rounded transition flex items-center gap-2 text-sm font-medium border ${
+            className={`px-4 py-2 rounded transition flex items-center justify-center gap-2 text-sm font-medium border shadow-md ${
               testRunning
-                ? 'bg-accent-red/10 text-accent-red border-accent-red/20 hover:bg-accent-red hover:text-white'
-                : 'bg-blue-600/10 text-blue-700 dark:text-blue-300 border-blue-500/20 hover:bg-blue-600 hover:text-white'
+                ? 'bg-red-50 text-red-700 border-red-300 hover:bg-red-600 hover:text-white hover:border-red-600 dark:bg-red-900/20 dark:text-red-400 dark:border-red-500/30'
+                : 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-500/30'
             }`}
           >
             <span className={`material-icons text-sm ${testRunning ? (trafficPulse ? 'animate-pulse' : '') : ''}`}>{testRunning ? 'stop' : 'play_arrow'}</span>
@@ -741,7 +741,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
           </button>
           <button
             onClick={onToggleTheme}
-            className="px-4 py-2 bg-white text-slate-700 rounded hover:bg-slate-50 transition flex items-center gap-2 text-sm font-medium border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-transparent dark:hover:bg-slate-700 dark:hover:border-slate-600"
+            className="px-4 py-2 bg-white text-slate-900 rounded hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium border border-slate-400 shadow-md dark:bg-slate-800 dark:text-slate-300 dark:border-transparent dark:hover:bg-slate-700 dark:hover:border-slate-600"
           >
             <span className="material-icons text-sm">{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
             {theme === 'dark' ? '白天' : '夜间'}
@@ -751,13 +751,13 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
               setHelpIndex(0);
               setShowHelpModal(true);
             }}
-            className="px-4 py-2 bg-white text-slate-700 rounded hover:bg-slate-50 transition flex items-center gap-2 text-sm font-medium border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-transparent dark:hover:bg-slate-700 dark:hover:border-slate-600"
+            className="px-4 py-2 bg-white text-slate-900 rounded hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium border border-slate-400 shadow-sm dark:bg-slate-800 dark:text-slate-300 dark:border-transparent dark:hover:bg-slate-700 dark:hover:border-slate-600"
           >
             <span className="material-icons text-sm">help_outline</span> 帮助
           </button>
           <button 
             onClick={() => window.electronAPI.quitApp()}
-            className="px-4 py-2 bg-accent-red/10 text-accent-red border border-accent-red/20 rounded hover:bg-accent-red hover:text-white transition flex items-center gap-2 text-sm font-medium group shadow-[0_0_10px_rgba(239,68,68,0)] hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+            className="px-4 py-2 bg-accent-red/10 text-accent-red border border-accent-red/20 rounded hover:bg-accent-red hover:text-white transition flex items-center justify-center gap-2 text-sm font-medium group shadow-[0_0_10px_rgba(239,68,68,0)] hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
           >
             <span className="material-icons text-sm group-hover:rotate-90 transition-transform">power_settings_new</span> 关闭
           </button>

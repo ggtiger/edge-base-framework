@@ -125,7 +125,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
 const KeyButton: React.FC<{ children: React.ReactNode; onClick: () => void }> = ({ children, onClick }) => (
   <button 
     onClick={onClick}
-    className="h-12 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-slate-500 text-slate-200 font-display font-bold text-lg active:scale-95 transition-all shadow-sm"
+    className="h-12 rounded-lg bg-white dark:bg-slate-800 border border-slate-400 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-blue-500 dark:hover:border-slate-500 text-slate-900 dark:text-slate-200 font-display font-bold text-lg active:scale-95 transition-all shadow-md hover:shadow-lg flex items-center justify-center"
   >
     {children}
   </button>
@@ -133,13 +133,13 @@ const KeyButton: React.FC<{ children: React.ReactNode; onClick: () => void }> = 
 
 const ActionButton: React.FC<{ onClick: () => void; icon?: string; label?: string; color: 'red' | 'orange' }> = ({ onClick, icon, label, color }) => {
     const colorClasses = color === 'red' 
-        ? 'bg-red-900/20 border-red-900/30 text-red-400 hover:bg-red-900/40 hover:text-red-300' 
-        : 'bg-orange-900/20 border-orange-900/30 text-orange-400 hover:bg-orange-900/40 hover:text-orange-300';
+        ? 'bg-red-100 dark:bg-red-900/20 border-red-300 dark:border-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/40 shadow-sm' 
+        : 'bg-orange-100 dark:bg-orange-900/20 border-orange-300 dark:border-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/40 shadow-sm';
     
     return (
         <button 
             onClick={onClick}
-            className={`h-12 rounded-lg border ${colorClasses} font-bold active:scale-95 transition-all flex items-center justify-center`}
+            className={`h-12 rounded-lg border ${colorClasses} font-bold active:scale-95 transition-all flex items-center justify-center shadow-md hover:shadow-lg`}
         >
             {icon ? <span className="material-icons text-sm">{icon}</span> : label}
         </button>
