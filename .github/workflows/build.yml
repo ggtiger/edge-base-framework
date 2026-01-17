@@ -3,6 +3,8 @@ name: Build/Release
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
 
@@ -28,8 +30,6 @@ jobs:
         run: npm install
 
       - name: Build (No Publish)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:win -- --publish never
 
       - name: Upload Artifacts
