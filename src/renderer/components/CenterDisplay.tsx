@@ -53,6 +53,10 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
   const rearLeft = mode === 'QS' ? measurements.qzh : mode === 'WQ' ? measurements.wzh : '';
   const rearRight = mode === 'QS' ? measurements.qyh : mode === 'WQ' ? measurements.wyh : '';
 
+  const commonBoxStyle = "bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-cyan-200 dark:border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)] rounded";
+  const numberBoxStyle = `${commonBoxStyle} text-cyan-700 dark:text-cyan-400 text-center font-display text-xs py-1.5 px-3 min-w-[80px] tracking-wider pointer-events-auto`;
+  const wheelBoxStyle = `${commonBoxStyle} w-6 md:w-8 h-24 md:h-32`;
+
   return (
     <div className="col-span-6 flex flex-col h-full min-h-0">
       <GlassPanel className="flex flex-col h-full overflow-hidden relative border border-slate-200 dark:border-white/5">
@@ -97,30 +101,30 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
             {/* Overlays: Measurements */}
             {/* Front */}
             <div className="absolute top-4 inset-x-0 flex gap-4 justify-center z-20 pointer-events-none">
-              <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-cyan-200 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
+              <div className={numberBoxStyle}>
                 {formatAngle(frontLeft)}
               </div>
-              <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-cyan-200 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
+              <div className={numberBoxStyle}>
                 {formatAngle(frontRight)}
               </div>
             </div>
 
              {/* Wheel Indicators (Visual boxes near wheels) */}
-            <div className="absolute inset-y-0 left-[5%] md:left-[10%] flex flex-col justify-between py-[15%] md:py-[10%] pointer-events-none opacity-50">
-                <div className="w-6 md:w-8 h-24 md:h-32 border-2 border-primary/30 rounded-sm bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.1)]"></div>
-                <div className="w-6 md:w-8 h-24 md:h-32 border-2 border-primary/30 rounded-sm bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.1)]"></div>
+            <div className="absolute inset-y-0 left-[16%] md:left-[22%] flex flex-col justify-between py-[15%] md:py-[10%] pointer-events-none">
+                <div className={wheelBoxStyle}></div>
+                <div className={wheelBoxStyle}></div>
             </div>
-            <div className="absolute inset-y-0 right-[5%] md:right-[10%] flex flex-col justify-between py-[15%] md:py-[10%] pointer-events-none opacity-50">
-                <div className="w-6 md:w-8 h-24 md:h-32 border-2 border-primary/30 rounded-sm bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.1)]"></div>
-                <div className="w-6 md:w-8 h-24 md:h-32 border-2 border-primary/30 rounded-sm bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.1)]"></div>
+            <div className="absolute inset-y-0 right-[16%] md:right-[22%] flex flex-col justify-between py-[15%] md:py-[10%] pointer-events-none">
+                <div className={wheelBoxStyle}></div>
+                <div className={wheelBoxStyle}></div>
             </div>
 
             {/* Rear */}
             <div className="absolute bottom-4 inset-x-0 flex gap-4 justify-center z-20 pointer-events-none">
-              <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-cyan-200 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
+              <div className={numberBoxStyle}>
                 {formatAngle(rearLeft)}
               </div>
-              <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-cyan-200 dark:border-cyan-500/30 text-cyan-700 dark:text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
+              <div className={numberBoxStyle}>
                 {formatAngle(rearRight)}
               </div>
             </div>

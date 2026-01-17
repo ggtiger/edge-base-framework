@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Calibration from './views/Calibration'
 import Dashboard from './views/Dashboard'
+import { BootConfigFab } from './components/BootConfigFab'
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'calibration' | 'dashboard'>('calibration')
@@ -26,10 +27,20 @@ const App: React.FC = () => {
   const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'))
 
   if (currentView === 'calibration') {
-    return <Calibration onBack={() => setCurrentView('dashboard')} theme={theme} onToggleTheme={toggleTheme} />
+    return (
+      <>
+        <Calibration onBack={() => setCurrentView('dashboard')} theme={theme} onToggleTheme={toggleTheme} />
+        <BootConfigFab />
+      </>
+    )
   }
 
-  return <Dashboard onOpenCalibration={() => setCurrentView('calibration')} theme={theme} onToggleTheme={toggleTheme} />
+  return (
+    <>
+      <Dashboard onOpenCalibration={() => setCurrentView('calibration')} theme={theme} onToggleTheme={toggleTheme} />
+      <BootConfigFab />
+    </>
+  )
 }
 
 export default App

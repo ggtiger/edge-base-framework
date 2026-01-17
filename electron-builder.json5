@@ -11,6 +11,12 @@
     "package.json",
     "splash.html"
   ],
+  "extraResources": [
+    {
+      "from": "build/boot-config.default.json",
+      "to": "boot-config.default.json"
+    }
+  ],
   "mac": {
     "icon": "icon.png",
     "target": ["dmg"]

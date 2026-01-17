@@ -34,6 +34,28 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Update
   checkUpdate: () => ipcRenderer.send('update:check'),
   onUpdateStatus: (callback: (status: string) => void) => ipcRenderer.on('update:status', (_, status) => callback(status)),
+  getBootConfig: () => ipcRenderer.invoke('bootConfig:get'),
+  setBootConfig: (next: { versionCheckUrl?: string; versionCheckTimeoutMs?: number }) => ipcRenderer.invoke('bootConfig:set', next),
+  patchBootConfig: (patch: { versionCheckUrl?: string; versionCheckTimeoutMs?: number }) => ipcRenderer.invoke('bootConfig:patch', patch),
+  openBootConfigLocation: () => ipcRenderer.invoke('bootConfig:open-location'),
+  getRendererUpdateInfo: () => ipcRenderer.invoke('rendererUpdate:get-info'),
+  installRendererUpdateFromUrl: (url: string, sha256?: string, rendererVersion?: string) => ipcRenderer.invoke('rendererUpdate:install-from-url', { url, sha256, rendererVersion }),
+  revertRendererUpdate: () => ipcRenderer.invoke('rendererUpdate:revert'),
+  reloadRenderer: () => ipcRenderer.invoke('rendererUpdate:reload'),
+  onRendererUpdateStatus: (callback: (status: string) => void) => {
+    const subscription = (_: any, status: string) => callback(status)
+    ipcRenderer.on('rendererUpdate:status', subscription)
+    return () => {
+      ipcRenderer.removeListener('rendererUpdate:status', subscription)
+    }
+  },
+  onRendererUpdateProgress: (callback: (progress: { downloaded: number; total?: number }) => void) => {
+    const subscription = (_: any, progress: { downloaded: number; total?: number }) => callback(progress)
+    ipcRenderer.on('rendererUpdate:progress', subscription)
+    return () => {
+      ipcRenderer.removeListener('rendererUpdate:progress', subscription)
+    }
+  },
   
   // Window Control
   minimize: () => ipcRenderer.invoke('win:minimize'),

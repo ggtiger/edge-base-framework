@@ -93,36 +93,16 @@
     </div>
 
     <script>
-        // Simulate progress
         const bar = document.getElementById('bar');
         const status = document.getElementById('status');
-        const steps = [
-            { pct: 10, msg: "Checking system requirements..." },
-            { pct: 30, msg: "Loading hardware drivers..." },
-            { pct: 50, msg: "Initializing TCP/IP stack..." },
-            { pct: 70, msg: "Verifying security protocols..." },
-            { pct: 90, msg: "Starting user interface..." },
-            { pct: 100, msg: "Ready." }
-        ];
-
-        let currentStep = 0;
-        
-        // This duration should roughly match the setTimeout in main/index.ts (2000ms)
-        const totalDuration = 20000; 
-        const intervalTime = totalDuration / steps.length;
-
-        const timer = setInterval(() => {
-            if (currentStep >= steps.length) {
-                clearInterval(timer);
-                return;
-            }
-            
-            const step = steps[currentStep];
-            bar.style.width = step.pct + '%';
-            status.innerText = step.msg;
-            
-            currentStep++;
-        }, intervalTime);
+        window.setSplashProgress = (pct, msg) => {
+            const safePct = Number.isFinite(pct) ? Math.max(0, Math.min(100, pct)) : 0;
+            bar.style.width = safePct + '%';
+            if (typeof msg === 'string' && msg) status.innerText = msg;
+        };
+        window.setSplashStatus = (msg) => {
+            if (typeof msg === 'string' && msg) status.innerText = msg;
+        };
     </script>
 </body>
 </html>

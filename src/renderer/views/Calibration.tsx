@@ -4,6 +4,17 @@ import { CenterDisplay } from '../components/CenterDisplay';
 import { RightSidebar } from '../components/RightSidebar';
 import { ConnectionModal } from '../components/ConnectionModal';
 import { TcpLogViewer } from '../components/TcpLogViewer';
+import { HelpModal } from '../components/HelpModal';
+import { useTcpConnection } from '../hooks/useTcpConnection';
+import { useWheelSelection } from '../hooks/useWheelSelection';
+import { useCalibrationFlow } from '../hooks/useCalibrationFlow';
+import {
+  buildCommand,
+  getFirstSelectedWheel,
+  getModeMeasurementKey,
+  parseInboundData,
+  toNumberOrNull,
+} from '../utils/calibrationProtocol';
 import help1 from '../assets/help/ScreenShot_1.png';
 import help2 from '../assets/help/ScreenShot_2.png';
 import help3 from '../assets/help/ScreenShot_3.png';
@@ -15,405 +26,87 @@ interface CalibrationProps {
   onToggleTheme: () => void;
 }
 
-type Mode = 'QS' | 'WQ' | null;
-type WheelId = 'FL' | 'FR' | 'RL' | 'RR';
-
-type Measurements = {
-  qzq: string;
-  qyq: string;
-  qzh: string;
-  qyh: string;
-  wzq: string;
-  wyq: string;
-  wzh: string;
-  wyh: string;
-};
-
-type StepStatus = 'idle' | 'running' | 'done';
-
-const DEFAULT_HOST = '';
-const DEFAULT_PORT = 0;
 const MAX_RETRIES = 10;
 
 const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme }) => {
   const [time, setTime] = useState<string>('');
   const [isFullscreen, setIsFullscreen] = useState(false);
-
-  const [connectionSettings, setConnectionSettings] = useState({ ip: DEFAULT_HOST, port: DEFAULT_PORT });
-  const [retryCount, setRetryCount] = useState(0);
-  const [showConnectionModal, setShowConnectionModal] = useState(false);
-
-  const [testRunning, setTestRunning] = useState(false);
-  const [tcpStatus, setTcpStatus] = useState<string>('Disconnected');
-  const [lastRxAt, setLastRxAt] = useState<number | null>(null);
-  const [trafficPulse, setTrafficPulse] = useState(false);
-  const trafficPulseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [helpIndex, setHelpIndex] = useState(0);
 
-  const [sensorOk, setSensorOk] = useState<boolean | null>(null);
-  const [statusrc, setStatusrc] = useState<number | null>(null);
-  const [measurements, setMeasurements] = useState<Measurements>({
-    qzq: '',
-    qyq: '',
-    qzh: '',
-    qyh: '',
-    wzq: '',
-    wyq: '',
-    wzh: '',
-    wyh: '',
-  });
+  // TCP 连接管理
+  const inboundHandlerRef = useRef<((data: string) => void) | null>(null);
+  const tcp = useTcpConnection((data) => inboundHandlerRef.current?.(data));
 
-  const [mode, setMode] = useState<Mode>(null);
-  const [selectedWheels, setSelectedWheels] = useState<Record<WheelId, boolean>>({
-    FL: false,
-    FR: false,
-    RL: false,
-    RR: false,
-  });
-  const [activeWheel, setActiveWheel] = useState<WheelId | null>(null);
+  // 车轮选择
+  const wheels = useWheelSelection();
 
-  const [freeMeasure, setFreeMeasure] = useState({ toe: '', camber: '' });
-  const [setpoints, setSetpoints] = useState<string[]>(Array(6).fill(''));
-  const [kingpin, setKingpin] = useState('0.00');
-
-  const [paramsLocked, setParamsLocked] = useState(false);
-  const [step, setStep] = useState(0);
-  const [stepStatus, setStepStatus] = useState<StepStatus[]>(Array(6).fill('idle'));
-  const [pls, setPls] = useState('');
-  const [sendEnabled, setSendEnabled] = useState(false);
-  const [tcpLogs, setTcpLogs] = useState<{ direction: 'TX' | 'RX' | 'SYS'; content: string; timestamp: number }[]>([]);
-
-  const addTcpLog = React.useCallback((direction: 'TX' | 'RX' | 'SYS', content: string) => {
-    setTcpLogs(prev => [{ direction, content, timestamp: Date.now() }, ...prev].slice(0, 100));
-  }, []);
-
-  const sendTcpCmd = React.useCallback((cmd: string) => {
-    window.electronAPI.sendTcp(cmd);
-    addTcpLog('TX', cmd);
-  }, [addTcpLog]);
+  // 校准流程控制
+  const flow = useCalibrationFlow(tcp.isTcpConnected, tcp.sendTcpCmd);
 
   const stateRef = useRef({
-    mode,
-    step,
-    paramsLocked,
-    selectedWheels,
-    setpoints,
-    measurements,
-    statusrc,
+    mode: flow.mode,
+    step: flow.step,
+    paramsLocked: flow.paramsLocked,
+    selectedWheels: wheels.selectedWheels,
+    setpoints: flow.setpoints,
+    measurements: flow.measurements,
+    statusrc: flow.statusrc,
   });
 
   useEffect(() => {
     stateRef.current = {
-      mode,
-      step,
-      paramsLocked,
-      selectedWheels,
-      setpoints,
-      measurements,
-      statusrc,
+      mode: flow.mode,
+      step: flow.step,
+      paramsLocked: flow.paramsLocked,
+      selectedWheels: wheels.selectedWheels,
+      setpoints: flow.setpoints,
+      measurements: flow.measurements,
+      statusrc: flow.statusrc,
     };
-  }, [mode, step, paramsLocked, selectedWheels, setpoints, measurements, statusrc]);
-
-  const isTcpConnected = useMemo(() => tcpStatus === 'Connected', [tcpStatus]);
-
-  const linkStable = useMemo(() => {
-    if (!isTcpConnected) return false;
-    if (!lastRxAt) return false;
-    return Date.now() - lastRxAt < 2500;
-  }, [isTcpConnected, lastRxAt]);
-
-  const computeRelayrc = (nextMode: Mode, wheels: Record<WheelId, boolean>) => {
-    let relayrc = 0;
-    if (wheels.FL) relayrc += 1;
-    if (wheels.FR) relayrc += 2;
-    if (wheels.RL) relayrc += 4;
-    if (wheels.RR) relayrc += 8;
-    if (nextMode === 'QS') relayrc += 16;
-    if (nextMode === 'WQ') relayrc += 32;
-    return relayrc;
-  };
-
-  const buildCommand = (nextMode: Exclude<Mode, null>, nextPls: string) => {
-    const relayrc = computeRelayrc(nextMode, selectedWheels);
-    const relayBinary = relayrc.toString(2);
-    return `${nextMode}:Relay${relayBinary}${nextPls}`;
-  };
-
-  const toNumberOrNull = (v: string) => {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
-  };
-
-  const normalizeAngleText = (v: string) => {
-    const n = toNumberOrNull(v);
-    if (n === null) return v.trim();
-    return n.toFixed(2);
-  };
-
-  const getModeMeasurementKey = (nextMode: Exclude<Mode, null>, wheel: WheelId): keyof Measurements => {
-    if (nextMode === 'QS') {
-      if (wheel === 'FL') return 'qzq';
-      if (wheel === 'FR') return 'qyq';
-      if (wheel === 'RL') return 'qzh';
-      return 'qyh';
-    }
-    if (wheel === 'FL') return 'wzq';
-    if (wheel === 'FR') return 'wyq';
-    if (wheel === 'RL') return 'wzh';
-    return 'wyh';
-  };
-
-  const getFirstSelectedWheel = (wheels: Record<WheelId, boolean>): WheelId | null => {
-    if (wheels.FL) return 'FL';
-    if (wheels.FR) return 'FR';
-    if (wheels.RL) return 'RL';
-    if (wheels.RR) return 'RR';
-    return null;
-  };
-
-  const resetFlow = () => {
-    setSendEnabled(false);
-    setParamsLocked(false);
-    setStep(0);
-    setStepStatus(Array(6).fill('idle'));
-    setPls('');
-    setSetpoints(Array(6).fill(''));
-  };
-
-  const validateSetpoints = (vals: string[]) => {
-    if (!isTcpConnected) return false;
-    if (!mode) return false;
-    if (!Object.values(selectedWheels).some(Boolean)) return false;
-    if (vals.some(v => v.trim() === '')) return false;
-
-    return vals.every(v => {
-      const n = toNumberOrNull(v.trim());
-      if (n === null) return false;
-      return n >= -90 && n <= 90;
-    });
-  };
-
-  const startStep = (direction: 'forward' | 'reverse') => {
-    if (!isTcpConnected) return;
-    if (!mode) return;
-    if (!paramsLocked) return;
-    if (!Object.values(selectedWheels).some(Boolean)) return;
-
-    setStep(prev => {
-      const next =
-        direction === 'forward'
-          ? prev === 0
-            ? 1
-            : Math.min(prev + 1, 6)
-          : prev <= 1
-            ? 1
-            : prev - 1;
-
-      const sp = normalizeAngleText(setpoints[next - 1] ?? '');
-      const nextPls = `${mode}:Angle${sp}`;
-
-      setPls(nextPls);
-      setStepStatus(prevStatus => {
-        const copy = [...prevStatus];
-        copy[next - 1] = 'running';
-        return copy;
-      });
-      setSendEnabled(true);
-
-      return next;
-    });
-  };
-
-  const skipStep = (direction: 'forward' | 'reverse') => {
-    if (!paramsLocked) return;
-    setStep(prev => {
-      const next =
-        direction === 'forward'
-          ? prev === 0
-            ? 1
-            : Math.min(prev + 1, 6)
-          : prev <= 1
-            ? 1
-            : prev - 1;
-
-      setStepStatus(prevStatus => {
-        const copy = [...prevStatus];
-        if (prev >= 1 && prev <= 6) copy[prev - 1] = 'done';
-        copy[next - 1] = 'idle';
-        return copy;
-      });
-
-      return next;
-    });
-  };
-
-  const stopStep = () => {
-    setSendEnabled(false);
-    setStepStatus(prevStatus => {
-      if (step < 1 || step > 6) return prevStatus;
-      const copy = [...prevStatus];
-      if (copy[step - 1] === 'running') copy[step - 1] = 'idle';
-      return copy;
-    });
-  };
-
-  const setAndToggleParamsLock = () => {
-    const normalized = setpoints.map(v => normalizeAngleText(v));
-    setSetpoints(normalized);
-
-    if (!paramsLocked) {
-      if (!validateSetpoints(normalized)) return;
-      setParamsLocked(true);
-      return;
-    }
-
-    setParamsLocked(false);
-  };
-
-  const toggleWheel = (wheel: WheelId) => {
-    if (paramsLocked) return;
-    setSelectedWheels(prev => ({ ...prev, [wheel]: !prev[wheel] }));
-    setActiveWheel(wheel);
-  };
-
-  const linkFront = () => {
-    if (paramsLocked) return;
-    setSelectedWheels(prev => {
-      const next = { ...prev };
-      const willSelect = !(prev.FL && prev.FR);
-      next.FL = willSelect;
-      next.FR = willSelect;
-      return next;
-    });
-  };
-
-  const linkRear = () => {
-    if (paramsLocked) return;
-    setSelectedWheels(prev => {
-      const next = { ...prev };
-      const willSelect = !(prev.RL && prev.RR);
-      next.RL = willSelect;
-      next.RR = willSelect;
-      return next;
-    });
-  };
-
-  const parseInbound = (
-    raw: string,
-    snapshot: {
-      mode: Mode;
-      step: number;
-      paramsLocked: boolean;
-      selectedWheels: Record<WheelId, boolean>;
-      setpoints: string[];
-      measurements: Measurements;
-      statusrc: number | null;
-    }
-  ) => {
-    const str = raw.replace(/\0/g, '').trim();
-    let nextStatusrc: number | null = snapshot.statusrc;
-    let nextMeasurements: Measurements | null = null;
-
-    if (str.includes('SensorNG')) setSensorOk(false);
-    if (str.includes('SensorOK')) setSensorOk(true);
-
-    const statusMatch = str.match(/ST_status\s*([0-9]+)/i) ?? str.match(/ST_status([0-9]+)/i);
-    if (statusMatch?.[1] != null) {
-      const n = Number(statusMatch[1]);
-      if (Number.isFinite(n)) {
-        nextStatusrc = n;
-        setStatusrc(n);
-      }
-    }
-
-    const pos = {
-      pos1: str.indexOf('ST_status'),
-      pos10: str.indexOf('ND'),
-      qzq: str.indexOf('qzq'),
-      qyq: str.indexOf('qyq'),
-      qzh: str.indexOf('qzh'),
-      qyh: str.indexOf('qyh'),
-      wzq: str.indexOf('wzq'),
-      wyq: str.indexOf('wyq'),
-      wzh: str.indexOf('wzh'),
-      wyh: str.indexOf('wyh'),
-    };
-
-    const hasAll =
-      pos.pos1 >= 0 &&
-      pos.pos10 > pos.pos1 &&
-      pos.qzq >= 0 &&
-      pos.qyq > pos.qzq &&
-      pos.qzh > pos.qyq &&
-      pos.qyh > pos.qzh &&
-      pos.wzq > pos.qyh &&
-      pos.wyq > pos.wzq &&
-      pos.wzh > pos.wyq &&
-      pos.wyh > pos.wzh &&
-      pos.pos10 > pos.wyh;
-
-    if (hasAll) {
-      const next: Measurements = {
-        qzq: str.slice(pos.qzq + 3, pos.qyq).trim(),
-        qyq: str.slice(pos.qyq + 3, pos.qzh).trim(),
-        qzh: str.slice(pos.qzh + 3, pos.qyh).trim(),
-        qyh: str.slice(pos.qyh + 3, pos.wzq).trim(),
-        wzq: str.slice(pos.wzq + 3, pos.wyq).trim(),
-        wyq: str.slice(pos.wyq + 3, pos.wzh).trim(),
-        wzh: str.slice(pos.wzh + 3, pos.wyh).trim(),
-        wyh: str.slice(pos.wyh + 3, pos.pos10).trim(),
-      };
-
-      nextMeasurements = next;
-      setMeasurements(prev => ({ ...prev, ...next }));
-    }
-
-    const isAck =
-      str.includes('QSRECVOK') ||
-      str.includes('QS_HMOK') ||
-      str.includes('QS_ZEROOK') ||
-      str.includes('WQ_ZEROOK') ||
-      str.includes('WQ_HMOK') ||
-      str.includes('WQRECVOK');
-
-    if (isAck) setSendEnabled(false);
-
-    const canCheckDone =
-      snapshot.mode != null &&
-      snapshot.step >= 1 &&
-      snapshot.step <= 6 &&
-      snapshot.paramsLocked &&
-      Object.values(snapshot.selectedWheels).some(Boolean);
-
-    if (canCheckDone) {
-      const wheel = getFirstSelectedWheel(snapshot.selectedWheels);
-      if (wheel && snapshot.mode) {
-        const key = getModeMeasurementKey(snapshot.mode, wheel);
-        const actualText = (nextMeasurements?.[key] ?? snapshot.measurements[key] ?? '').toString();
-        const targetText = snapshot.setpoints[snapshot.step - 1] ?? '';
-
-        const actualNum = toNumberOrNull(actualText);
-        const targetNum = toNumberOrNull(targetText);
-        const okByNumber =
-          actualNum != null && targetNum != null ? Math.abs(actualNum - targetNum) < 0.005 : false;
-        const okByText = actualText.trim() !== '' && actualText.trim() === targetText.trim();
-
-        if ((okByNumber || okByText) && (nextStatusrc ?? 1) === 0) {
-          setStepStatus(prevStatus => {
-            const copy = [...prevStatus];
-            copy[snapshot.step - 1] = 'done';
-            return copy;
-          });
-          setSendEnabled(false);
-        }
-      }
-    }
-  };
+  }, [flow.mode, flow.step, flow.paramsLocked, wheels.selectedWheels, flow.setpoints, flow.measurements, flow.statusrc]);
 
   useEffect(() => {
-    // Clock update logic
+    inboundHandlerRef.current = (data: string) => {
+      flow.handleInboundData(data);
+
+      const snapshot = stateRef.current;
+      const canCheckDone =
+        snapshot.mode != null &&
+        snapshot.step >= 1 &&
+        snapshot.step <= 6 &&
+        snapshot.paramsLocked &&
+        Object.values(snapshot.selectedWheels).some(Boolean);
+
+      if (!canCheckDone) return;
+
+      const wheel = getFirstSelectedWheel(snapshot.selectedWheels);
+      const mode = snapshot.mode;
+      if (!wheel || !mode) return;
+
+      const parsed = parseInboundData(data);
+      const key = getModeMeasurementKey(mode, wheel);
+      const actualText = (parsed.measurements[key] ?? snapshot.measurements[key] ?? '').toString();
+      const targetText = snapshot.setpoints[snapshot.step - 1] ?? '';
+
+      const actualNum = toNumberOrNull(actualText);
+      const targetNum = toNumberOrNull(targetText);
+      const okByNumber =
+        actualNum != null && targetNum != null ? Math.abs(actualNum - targetNum) < 0.005 : false;
+      const okByText = actualText.trim() !== '' && actualText.trim() === targetText.trim();
+      const statusrc = parsed.statusrc ?? snapshot.statusrc ?? 1;
+
+      if ((okByNumber || okByText) && statusrc === 0) {
+        flow.setSendEnabled(false);
+      }
+    };
+
+    return () => {
+      inboundHandlerRef.current = null;
+    };
+  }, [flow.handleInboundData, flow.setSendEnabled]);
+
+  // 时钟更新
+  useEffect(() => {
     const updateTime = () => {
       const now = new Date();
       const formatted = now.toISOString().replace('T', ' ').substring(0, 19);
@@ -422,203 +115,66 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
     updateTime();
     const interval = setInterval(updateTime, 1000);
 
-    // 获取初始全屏状态
-    window.electronAPI?.isFullscreen().then(setIsFullscreen);
-    
-    // 监听全屏状态变化
-    window.electronAPI?.onFullscreenChanged(setIsFullscreen);
+    if (window.electronAPI) {
+      window.electronAPI.isFullscreen().then(setIsFullscreen).catch(console.error);
+      window.electronAPI.onFullscreenChanged(setIsFullscreen);
 
-    let cancelled = false;
-    window.electronAPI
-      ?.getTcpConfig?.()
-      .then(cfg => {
-        if (cancelled) return;
-        if (!cfg) return;
-        const host = typeof cfg.host === 'string' ? cfg.host.trim() : DEFAULT_HOST;
-        const port = Number.isFinite(cfg.port) ? cfg.port : DEFAULT_PORT;
-        setConnectionSettings({ ip: host, port });
-      })
-      .catch(() => {});
-
-    // Notify main process that Calibration view is fully rendered
-    // Use requestAnimationFrame to ensure DOM is painted
-    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        if (window.electronAPI?.notifyAppReady) {
+        requestAnimationFrame(() => {
           window.electronAPI.notifyAppReady();
           console.log('[Calibration] Notified main process - fully rendered');
-        }
+        });
       });
-    });
+    }
 
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, []);
 
-  const startTest = (next?: { ip: string; port: number }) => {
-    const ip = next?.ip ?? connectionSettings.ip;
-    const port = next?.port ?? connectionSettings.port;
-    if (!ip || ip.trim() === '' || !Number.isFinite(port) || port <= 0) {
-      setTestRunning(false);
-      setTcpStatus('Disconnected');
-      setRetryCount(0);
-      setShowConnectionModal(true);
-      return;
-    }
-    
-    setTestRunning(true);
-    setTcpStatus('Connecting');
-    addTcpLog('SYS', `Connecting to ${ip}:${port}...`);
-    window.electronAPI.setTcpConfig?.(ip, port);
-    window.electronAPI.connectTcp(ip, port);
-    setRetryCount(1);
-    setShowConnectionModal(false);
-  };
-
-  const stopTest = () => {
-    setTestRunning(false);
-    setTcpStatus('Disconnected');
-    setRetryCount(0);
-    setShowConnectionModal(false);
-    setLastRxAt(null);
-    setTrafficPulse(false);
-    if (trafficPulseTimerRef.current) {
-      clearTimeout(trafficPulseTimerRef.current);
-      trafficPulseTimerRef.current = null;
-    }
-    addTcpLog('SYS', 'Disconnecting...');
-    window.electronAPI.disconnectTcp();
-  };
-
+  // 定期发送命令
   useEffect(() => {
-    const removeStatusListener = window.electronAPI.onTcpStatus((status) => {
-      setTcpStatus(status);
-      addTcpLog('SYS', `Status: ${status}`);
-    });
-    const removeDataListener = window.electronAPI.onTcpData((data) => {
-      setLastRxAt(Date.now());
-      setTrafficPulse(true);
-      if (trafficPulseTimerRef.current) clearTimeout(trafficPulseTimerRef.current);
-      trafficPulseTimerRef.current = setTimeout(() => {
-        setTrafficPulse(false);
-      }, 160);
-      addTcpLog('RX', data);
-      parseInbound(data, stateRef.current);
-    });
-
-    return () => {
-      removeStatusListener();
-      removeDataListener();
-      if (trafficPulseTimerRef.current) {
-        clearTimeout(trafficPulseTimerRef.current);
-        trafficPulseTimerRef.current = null;
-      }
-    };
-  }, [addTcpLog]);
-
-  // Retry logic
-  useEffect(() => {
-    if (!testRunning) return;
-    if (tcpStatus === 'Connected') {
-      setRetryCount(0);
-      setShowConnectionModal(false);
-      return;
-    }
-
-    if (showConnectionModal) return;
-    
-    // If we are disconnected but testRunning is true, we should retry.
-    // If retryCount is 0 (which happens after a successful connection resets it),
-    // we need to set it to 1 to start the retry sequence.
-    if (retryCount <= 0) {
-       if (
-         tcpStatus === 'Disconnected' ||
-         tcpStatus === 'Closed' ||
-         tcpStatus.includes('Error') ||
-         tcpStatus.startsWith('TCP Error')
-       ) {
-          setRetryCount(1);
-          // Trigger immediate reconnection attempt for better UX?
-          // Or wait for the effect to run again? 
-          // If we just setRetryCount(1), the component re-renders, 
-          // and the next pass will hit the setTimeout logic below.
-          return;
-       }
-       return;
-    }
-
-    if (retryCount >= MAX_RETRIES) {
-      setShowConnectionModal(true);
-      return;
-    }
-
-    if (
-      tcpStatus === 'Disconnected' ||
-      tcpStatus === 'Closed' ||
-      tcpStatus.includes('Error') ||
-      tcpStatus.startsWith('TCP Error')
-    ) {
-      const timer = setTimeout(() => {
-        setRetryCount(c => c + 1);
-        window.electronAPI.connectTcp(connectionSettings.ip, connectionSettings.port);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [tcpStatus, retryCount, showConnectionModal, connectionSettings, testRunning]);
-
-  useEffect(() => {
-    if (!isTcpConnected) return;
-    if (!testRunning) return;
-    const interval = setInterval(() => {
-      sendTcpCmd('S1F1');
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isTcpConnected, testRunning, sendTcpCmd]);
-
-  useEffect(() => {
-    if (!isTcpConnected) return;
-    if (!sendEnabled) return;
+    if (!tcp.isTcpConnected) return;
+    if (!flow.sendEnabled) return;
+    if (!flow.pls) return;
+    const mode = flow.mode;
     if (!mode) return;
-    if (!pls) return;
 
     const interval = setInterval(() => {
-      const cmd = buildCommand(mode, pls);
-      sendTcpCmd(cmd);
+      const cmd = buildCommand(mode, flow.pls, wheels.selectedWheels);
+      tcp.sendTcpCmd(cmd);
     }, 200);
 
     return () => clearInterval(interval);
-  }, [isTcpConnected, mode, pls, selectedWheels, sendEnabled, sendTcpCmd]);
+  }, [tcp.isTcpConnected, flow.mode, flow.pls, wheels.selectedWheels, flow.sendEnabled, tcp.sendTcpCmd]);
 
   const handleToggleFullscreen = async () => {
-    const newState = await window.electronAPI.toggleFullscreen();
+    const api = window.electronAPI;
+    if (!api?.toggleFullscreen) return;
+    const newState = await api.toggleFullscreen();
     setIsFullscreen(newState);
   };
 
-  const displayedIp = useMemo(() => connectionSettings.ip, [connectionSettings.ip]);
+  const displayedIp = useMemo(() => tcp.connectionSettings.ip, [tcp.connectionSettings.ip]);
   const displayedLatency = useMemo(() => {
-    if (!linkStable) return '--';
+    if (!tcp.linkStable) return '--';
     return '12ms';
-  }, [linkStable]);
+  }, [tcp.linkStable]);
 
   const statusText = useMemo(() => {
-    if (tcpStatus === 'Connected') return `已连接 - 延迟 ${displayedLatency}`;
-    if (showConnectionModal) return `连接失败（已重试 ${MAX_RETRIES} 次）`;
-    
-    // Ensure numbers are treated as numbers for display
-    const current = Number(retryCount);
+    if (tcp.tcpStatus === 'Connected') return `已连接 - 延迟 ${displayedLatency}`;
+    if (tcp.showConnectionModal) return `连接失败（已重试 ${MAX_RETRIES} 次）`;
+
+    const current = Number(tcp.retryCount);
     const max = Number(MAX_RETRIES);
-    
+
     if (current > 0 && current < max) {
       return `正在重连 (${current}/${max})...`;
     }
-    
-    if (tcpStatus === 'Disconnected') return '未连接';
-    if (tcpStatus === 'Closed') return '连接已关闭';
-    if (tcpStatus.startsWith('TCP Error')) return '连接错误';
-    return tcpStatus;
-  }, [tcpStatus, retryCount, displayedLatency, showConnectionModal]);
+
+    if (tcp.tcpStatus === 'Disconnected') return '未连接';
+    if (tcp.tcpStatus === 'Closed') return '连接已关闭';
+    if (tcp.tcpStatus.startsWith('TCP Error')) return '连接错误';
+    return tcp.tcpStatus;
+  }, [tcp.tcpStatus, tcp.retryCount, displayedLatency, tcp.showConnectionModal]);
 
   const helpSlides = useMemo(() => {
     return [
@@ -629,119 +185,26 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
     ];
   }, []);
 
-  useEffect(() => {
-    if (!showHelpModal) return;
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setShowHelpModal(false);
-        return;
-      }
-      if (e.key === 'ArrowLeft') {
-        setHelpIndex(prev => Math.max(0, prev - 1));
-      }
-      if (e.key === 'ArrowRight') {
-        setHelpIndex(prev => Math.min(helpSlides.length - 1, prev + 1));
-      }
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showHelpModal, helpSlides.length]);
-
   return (
     <div className="h-screen w-screen flex flex-col font-sans bg-background-light text-slate-900 dark:bg-background-dark dark:text-slate-200 overflow-hidden relative">
-      {showConnectionModal && (
+      {tcp.showConnectionModal && (
         <ConnectionModal
-          initialIp={connectionSettings.ip}
-          initialPort={connectionSettings.port}
+          initialIp={tcp.connectionSettings.ip}
+          initialPort={tcp.connectionSettings.port}
           onConnect={(ip, port) => {
-            setConnectionSettings({ ip, port });
-            startTest({ ip, port });
+            tcp.setConnectionSettings({ ip, port });
+            tcp.startTest({ ip, port });
           }}
         />
       )}
 
-      {showHelpModal && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          onClick={() => setShowHelpModal(false)}
-        >
-          <div
-            className="w-full max-w-5xl rounded-2xl bg-white/90 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-white/10">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="material-icons text-blue-400">help</span>
-                <div
-                  className="min-w-0"
-                  style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif' }}
-                >
-                  <div className="text-sm font-bold text-slate-900 dark:text-white truncate">{helpSlides[helpIndex]?.title ?? '帮助'}</div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400">{`${helpIndex + 1} / ${helpSlides.length}`}</div>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowHelpModal(false)}
-                className="w-9 h-9 rounded-lg bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 transition flex items-center justify-center border border-slate-200 dark:border-slate-700"
-              >
-                <span className="material-icons text-sm text-slate-700 dark:text-slate-200">close</span>
-              </button>
-            </div>
+      {showHelpModal && <HelpModal slides={helpSlides} onClose={() => setShowHelpModal(false)} />}
 
-            <div className="bg-black/20">
-              <div className="w-full aspect-video flex items-center justify-center">
-                <img
-                  src={helpSlides[helpIndex]?.src}
-                  alt={helpSlides[helpIndex]?.title ?? 'help'}
-                  className="w-full h-full object-contain"
-                  draggable={false}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between px-5 py-4 border-t border-slate-200 dark:border-white/10">
-              <button
-                onClick={() => setHelpIndex(prev => Math.max(0, prev - 1))}
-                disabled={helpIndex <= 0}
-                className={`px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm font-medium border ${
-                  helpIndex <= 0
-                    ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed dark:bg-slate-800/50 dark:text-slate-500 dark:border-slate-800'
-                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700'
-                }`}
-              >
-                <span className="material-icons text-sm">chevron_left</span>
-                上一页
-              </button>
-
-              <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                <span className="material-icons text-sm">keyboard</span>
-                ESC 关闭 · ←/→ 翻页
-              </div>
-
-              <button
-                onClick={() => setHelpIndex(prev => Math.min(helpSlides.length - 1, prev + 1))}
-                disabled={helpIndex >= helpSlides.length - 1}
-                className={`px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm font-medium border ${
-                  helpIndex >= helpSlides.length - 1
-                    ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed dark:bg-slate-800/50 dark:text-slate-500 dark:border-slate-800'
-                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700'
-                }`}
-              >
-                下一页
-                <span className="material-icons text-sm">chevron_right</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
       {/* Header */}
       <header className="h-14 border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 backdrop-blur-md px-6 flex justify-between items-center shrink-0 z-50 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded flex items-center justify-center shadow-lg shadow-blue-500/20">
-             <span className="material-icons text-white text-xl">precision_manufacturing</span>
+            <span className="material-icons text-white text-xl">precision_manufacturing</span>
           </div>
           <div>
             <h1 className="text-xl font-display font-bold tracking-wider text-slate-900 dark:text-white leading-none">
@@ -750,31 +213,20 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
             <p className="text-[10px] text-slate-500 font-display tracking-[0.2em] mt-1">Calibration System</p>
           </div>
         </div>
-        
+
         <div className="flex gap-3">
-          {/* <button 
-            onClick={onBack}
-            className="px-4 py-2 bg-slate-800 text-slate-300 rounded hover:bg-slate-700 transition flex items-center gap-2 text-sm font-medium border border-transparent hover:border-slate-600"
-          >
-            <span className="material-icons text-sm">home</span> 主页
-          </button>
-          <button 
-            onClick={handleToggleFullscreen}
-            className="px-4 py-2 bg-slate-800 text-slate-300 rounded hover:bg-slate-700 transition flex items-center gap-2 text-sm font-medium border border-transparent hover:border-slate-600"
-          >
-            <span className="material-icons text-sm">{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</span> 
-            {isFullscreen ? '退出全屏' : '全屏'}
-          </button> */}
           <button
-            onClick={() => (testRunning ? stopTest() : startTest())}
+            onClick={() => (tcp.testRunning ? tcp.stopTest() : tcp.startTest())}
             className={`px-4 py-2 rounded transition flex items-center justify-center gap-2 text-sm font-medium border shadow-md ${
-              testRunning
+              tcp.testRunning
                 ? 'bg-red-50 text-red-700 border-red-300 hover:bg-red-600 hover:text-white hover:border-red-600 dark:bg-red-900/20 dark:text-red-400 dark:border-red-500/30'
                 : 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-500/30'
             }`}
           >
-            <span className={`material-icons text-sm ${testRunning ? (trafficPulse ? 'animate-pulse' : '') : ''}`}>{testRunning ? 'stop' : 'play_arrow'}</span>
-            {testRunning ? '停止测试' : '启动测试'}
+            <span className={`material-icons text-sm ${tcp.testRunning ? (tcp.trafficPulse ? 'animate-pulse' : '') : ''}`}>
+              {tcp.testRunning ? 'stop' : 'play_arrow'}
+            </span>
+            {tcp.testRunning ? '停止测试' : '启动测试'}
           </button>
           <button
             onClick={onToggleTheme}
@@ -784,16 +236,13 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
             {theme === 'dark' ? '白天' : '夜间'}
           </button>
           <button
-            onClick={() => {
-              setHelpIndex(0);
-              setShowHelpModal(true);
-            }}
+            onClick={() => setShowHelpModal(true)}
             className="px-4 py-2 bg-white text-slate-900 rounded hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium border border-slate-400 shadow-sm dark:bg-slate-800 dark:text-slate-300 dark:border-transparent dark:hover:bg-slate-700 dark:hover:border-slate-600"
           >
             <span className="material-icons text-sm">help_outline</span> 帮助
           </button>
-          <button 
-            onClick={() => window.electronAPI.quitApp()}
+          <button
+            onClick={() => void window.electronAPI?.quitApp?.()}
             className="px-4 py-2 bg-accent-red/10 text-accent-red border border-accent-red/20 rounded hover:bg-accent-red hover:text-white transition flex items-center justify-center gap-2 text-sm font-medium group shadow-[0_0_10px_rgba(239,68,68,0)] hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
           >
             <span className="material-icons text-sm group-hover:rotate-90 transition-transform">power_settings_new</span> 关闭
@@ -804,85 +253,51 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
       {/* Main Content */}
       <main className="h-[calc(100vh-6rem)] p-4 grid grid-cols-12 gap-4 overflow-hidden relative">
         <LeftSidebar
-          tcpStatus={tcpStatus}
-          linkStable={linkStable}
-          trafficPulse={trafficPulse}
-          sensorOk={sensorOk}
-          mode={mode}
+          tcpStatus={tcp.tcpStatus}
+          linkStable={tcp.linkStable}
+          trafficPulse={tcp.trafficPulse}
+          sensorOk={flow.sensorOk}
+          mode={flow.mode}
           onSelectMode={(m: 'QS' | 'WQ') => {
-            if (paramsLocked) return;
-            setMode(prev => (prev === m ? null : m));
+            if (flow.paramsLocked) return;
+            flow.setMode(prev => (prev === m ? null : m));
           }}
-          selectedWheels={selectedWheels}
-          onToggleWheel={toggleWheel}
-          onLinkFront={linkFront}
-          onLinkRear={linkRear}
-          disabled={paramsLocked}
+          selectedWheels={wheels.selectedWheels}
+          onToggleWheel={(w) => wheels.toggleWheel(w, flow.paramsLocked)}
+          onLinkFront={() => wheels.linkFront(flow.paramsLocked)}
+          onLinkRear={() => wheels.linkRear(flow.paramsLocked)}
+          onLinkLeft={() => wheels.linkLeft(flow.paramsLocked)}
+          onLinkRight={() => wheels.linkRight(flow.paramsLocked)}
+          disabled={flow.paramsLocked}
         />
         <CenterDisplay
-          mode={mode}
-          activeWheel={activeWheel}
-          onSelectWheel={(w) => setActiveWheel(w)}
-          measurements={measurements}
-          onAction={(action: 'hm' | 'angle0' | 'zero') => {
-            if (!isTcpConnected) return;
-            if (!mode) return;
-
-            if (action === 'angle0') {
-              setPls(`${mode}:Angle0`);
-              setSendEnabled(true);
-              return;
-            }
-
-            if (action === 'zero') {
-              setPls(`${mode}_ZERO`);
-              setSendEnabled(true);
-              return;
-            }
-
-            if (action === 'hm') {
-              setPls(`${mode}_HM`);
-              setSendEnabled(true);
-            }
-          }}
+          mode={flow.mode}
+          activeWheel={wheels.activeWheel}
+          onSelectWheel={(w) => wheels.setActiveWheel(w)}
+          measurements={flow.measurements}
+          onAction={flow.handleAction}
         />
         <RightSidebar
-          isConnected={isTcpConnected}
-          freeMeasure={freeMeasure}
-          onChangeFreeMeasure={(next) => setFreeMeasure(next)}
-          setpoints={setpoints}
-          onChangeSetpoints={(next) => setSetpoints(next)}
-          step={step}
-          stepStatus={stepStatus}
-          paramsLocked={paramsLocked}
-          kingpin={kingpin}
-          onChangeKingpin={(next) => setKingpin(next)}
-          onLockParams={setAndToggleParamsLock}
-          onCancel={resetFlow}
-          onStartForward={() => startStep('forward')}
-          onStartReverse={() => startStep('reverse')}
-          onSkipForward={() => skipStep('forward')}
-          onSkipReverse={() => skipStep('reverse')}
-          onStopForward={stopStep}
-          onStopReverse={stopStep}
-          onStartManualToe={() => {
-            if (!isTcpConnected) return;
-            const value = normalizeAngleText(freeMeasure.toe);
-            setFreeMeasure(prev => ({ ...prev, toe: value }));
-            const nextPls = `QS:Angle${value}`;
-            setMode('QS');
-            setPls(nextPls);
-            setSendEnabled(true);
-          }}
-          onStartManualCamber={() => {
-            if (!isTcpConnected) return;
-            const value = normalizeAngleText(freeMeasure.camber);
-            setFreeMeasure(prev => ({ ...prev, camber: value }));
-            const nextPls = `WQ:Angle${value}`;
-            setMode('WQ');
-            setPls(nextPls);
-            setSendEnabled(true);
-          }}
+          isConnected={tcp.isTcpConnected}
+          freeMeasure={flow.freeMeasure}
+          onChangeFreeMeasure={flow.setFreeMeasure}
+          setpoints={flow.setpoints}
+          onChangeSetpoints={flow.setSetpoints}
+          step={flow.step}
+          stepStatus={flow.stepStatus}
+          paramsLocked={flow.paramsLocked}
+          kingpin={flow.kingpin}
+          onChangeKingpin={flow.setKingpin}
+          onLockParams={flow.setAndToggleParamsLock}
+          onCancel={flow.resetFlow}
+          onStartForward={() => flow.startStep('forward', wheels.selectedWheels)}
+          onStartReverse={() => flow.startStep('reverse', wheels.selectedWheels)}
+          onSkipForward={() => flow.skipStep('forward')}
+          onSkipReverse={() => flow.skipStep('reverse')}
+          onStopForward={flow.stopStep}
+          onStopReverse={flow.stopStep}
+          onStartManualToe={flow.startManualToe}
+          onStartManualCamber={flow.startManualCamber}
           disabled={false}
         />
       </main>
@@ -891,26 +306,30 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
       <footer className="h-10 shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between z-50 text-xs font-medium text-slate-600 dark:text-slate-500">
         <div className="flex items-center shrink-0 h-7 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md overflow-visible shadow-sm">
           <div className="flex items-center gap-2 px-3 h-full shrink-0">
-             <div className={`w-1.5 h-1.5 rounded-full ${linkStable ? 'bg-accent-green animate-pulse' : 'bg-accent-red'}`}></div>
-             <span className="font-bold tracking-wide text-[10px] sm:text-xs whitespace-nowrap text-slate-600 dark:text-slate-400">{linkStable ? 'LINK: OK' : 'LINK: LOST'}</span>
+            <div className={`w-1.5 h-1.5 rounded-full ${tcp.linkStable ? 'bg-accent-green animate-pulse' : 'bg-accent-red'}`}></div>
+            <span className="font-bold tracking-wide text-[10px] sm:text-xs whitespace-nowrap text-slate-600 dark:text-slate-400">
+              {tcp.linkStable ? 'LINK: OK' : 'LINK: LOST'}
+            </span>
           </div>
-          
+
           <div className="w-px h-full bg-slate-200 dark:bg-slate-700"></div>
 
-          <div 
+          <div
             className="px-3 text-slate-900 dark:text-slate-200 whitespace-nowrap h-full flex items-center"
-            style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Arial, sans-serif' }}
+            style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif' }}
           >
             {statusText}
           </div>
-          
-          <TcpLogViewer logs={tcpLogs} />
+
+          <TcpLogViewer logs={tcp.tcpLogs} />
         </div>
-        
+
         <div className="flex items-center gap-4 font-display tracking-wide shrink-0">
           <div className="hidden md:flex items-center gap-2 opacity-70">
-             <span className="material-icons text-[10px]">my_location</span>
-             <span>IP：{displayedIp}:{connectionSettings.port}</span>
+            <span className="material-icons text-[10px]">my_location</span>
+            <span>
+              IP：{displayedIp}:{tcp.connectionSettings.port}
+            </span>
           </div>
           <div className="text-slate-600 dark:text-slate-500 w-32 sm:w-48 text-right truncate">
             {time || 'INITIALIZING...'}

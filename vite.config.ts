@@ -22,7 +22,7 @@ export default defineConfig({
             minify: false,
             outDir: 'dist-electron/main',
             rollupOptions: {
-              external: ['serialport', 'sqlite3', 'electron-store', 'systeminformation', 'koffi'],
+              external: ['serialport', 'sqlite3', 'electron-store', 'systeminformation', 'koffi', 'adm-zip'],
             },
           },
         },
@@ -38,7 +38,7 @@ export default defineConfig({
             minify: false,
             outDir: 'dist-electron/preload',
             rollupOptions: {
-              external: ['serialport', 'sqlite3', 'electron-store', 'systeminformation', 'koffi'],
+              external: ['serialport', 'sqlite3', 'electron-store', 'systeminformation', 'koffi', 'adm-zip'],
             },
           },
         },

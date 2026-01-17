@@ -15,6 +15,8 @@ interface LeftSidebarProps {
   onToggleWheel: (wheel: WheelId) => void;
   onLinkFront: () => void;
   onLinkRear: () => void;
+  onLinkLeft: () => void;
+  onLinkRight: () => void;
   disabled: boolean;
 }
 
@@ -29,6 +31,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   onToggleWheel,
   onLinkFront,
   onLinkRear,
+  onLinkLeft,
+  onLinkRight,
   disabled,
 }) => {
   const systemOnline = tcpStatus === 'Connected';
@@ -181,9 +185,9 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                         <button
                           disabled={disabled}
                           onClick={onLinkFront}
-                          className={`w-6 h-6 rounded-full bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-700 flex items-center justify-center transition-all z-20 group shadow-md ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
+                          className={`w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-700 flex items-center justify-center transition-all z-20 group shadow-md ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
                         >
-                            <span className="material-icons text-[10px] text-slate-700 group-hover:text-indigo-600 transition-colors">link</span>
+                            <span className="material-icons text-[12px] text-slate-700 group-hover:text-indigo-600 transition-colors">link</span>
                         </button>
                    </div>
 
@@ -193,9 +197,31 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                         <button
                           disabled={disabled}
                           onClick={onLinkRear}
-                          className={`w-6 h-6 rounded-full bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-700 flex items-center justify-center transition-all z-20 group shadow-md ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
+                          className={`w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-700 flex items-center justify-center transition-all z-20 group shadow-md ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
                         >
-                            <span className="material-icons text-[10px] text-slate-700 group-hover:text-indigo-600 transition-colors">link</span>
+                            <span className="material-icons text-[12px] text-slate-700 group-hover:text-indigo-600 transition-colors">link</span>
+                        </button>
+                   </div>
+
+                   {/* Left Link Button (Vertical) */}
+                   <div className="absolute left-[8%] top-4 bottom-4 w-[1px] bg-gradient-to-b from-transparent via-slate-600/30 to-transparent flex items-center justify-center">
+                        <button
+                          disabled={disabled}
+                          onClick={onLinkLeft}
+                          className={`w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-700 flex items-center justify-center transition-all z-20 group shadow-md ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
+                        >
+                            <span className="material-icons text-[12px] text-slate-700 group-hover:text-indigo-600 transition-colors rotate-90">link</span>
+                        </button>
+                   </div>
+
+                   {/* Right Link Button (Vertical) */}
+                   <div className="absolute right-[8%] top-4 bottom-4 w-[1px] bg-gradient-to-b from-transparent via-slate-600/30 to-transparent flex items-center justify-center">
+                        <button
+                          disabled={disabled}
+                          onClick={onLinkRight}
+                          className={`w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-700 flex items-center justify-center transition-all z-20 group shadow-md ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
+                        >
+                            <span className="material-icons text-[12px] text-slate-700 group-hover:text-indigo-600 transition-colors rotate-90">link</span>
                         </button>
                    </div>
 

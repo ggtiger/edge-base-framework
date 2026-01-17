@@ -25,6 +25,23 @@ interface Window {
     // Update
     checkUpdate: () => void
     onUpdateStatus: (callback: (status: string) => void) => void
+    getBootConfig: () => Promise<{ versionCheckUrl?: string; versionCheckTimeoutMs?: number }>
+    setBootConfig: (next: { versionCheckUrl?: string; versionCheckTimeoutMs?: number }) => Promise<{ versionCheckUrl?: string; versionCheckTimeoutMs?: number }>
+    patchBootConfig: (patch: { versionCheckUrl?: string; versionCheckTimeoutMs?: number }) => Promise<{ versionCheckUrl?: string; versionCheckTimeoutMs?: number }>
+    openBootConfigLocation: () => Promise<{ ok: true }>
+    getRendererUpdateInfo: () => Promise<{
+      active: 'bundled' | 'custom'
+      customIndexHtmlPath?: string
+      updateRoot: string
+      activeDirName?: string
+      appVersion: string
+      rendererVersion: string
+    }>
+    installRendererUpdateFromUrl: (url: string, sha256?: string, rendererVersion?: string) => Promise<{ ok: true; installId: string; updateRoot: string; indexHtml: string; rendererVersion: string | null }>
+    revertRendererUpdate: () => Promise<{ ok: boolean }>
+    reloadRenderer: () => Promise<{ ok: true }>
+    onRendererUpdateStatus: (callback: (status: string) => void) => () => void
+    onRendererUpdateProgress: (callback: (progress: { downloaded: number; total?: number }) => void) => () => void
 
     // Window Control
     minimize: () => Promise<void>
