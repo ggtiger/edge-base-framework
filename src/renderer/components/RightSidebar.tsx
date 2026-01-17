@@ -191,7 +191,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                    onChangeSetpoints(newArr);
                  });
                }}
-               placeholder={`Val ${i + 1}`} 
+               placeholder={`A ${i + 1}`} 
                className={`${inputClassForStep(i)} ${paramsLocked ? 'opacity-70 cursor-not-allowed' : ''}`}
              />
           ))}

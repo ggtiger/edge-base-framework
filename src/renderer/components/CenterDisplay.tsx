@@ -55,15 +55,16 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
 
   // 基础样式
   const baseBoxStyle = "backdrop-blur-md rounded transition-all duration-300";
-  
+  const commonBoxStyle = "bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-cyan-200 dark:border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)] rounded";
   // 主题样式
   const cyanTheme = "bg-white/90 dark:bg-slate-900/80 border border-cyan-200 dark:border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)]";
   // 模仿 LeftSidebar 按钮的激活样式：bg-indigo-50 border-indigo-500/60
   const activeTheme = "bg-indigo-100 dark:bg-indigo-500/20 border-2 border-indigo-500 dark:border-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.4)]";
 
   // 根据模式动态计算样式
-  const wheelBoxStyle = `${baseBoxStyle} ${mode === 'WQ' ? activeTheme : cyanTheme} w-6 md:w-8 h-24 md:h-20`;
-  const numberBoxStyle = `${baseBoxStyle} ${mode === 'QS' ? activeTheme : cyanTheme} w-24 md:w-20 h-8 md:h-8`;
+  const wheelBoxStyle = `${commonBoxStyle}${baseBoxStyle} ${mode === 'WQ' ? activeTheme : cyanTheme} w-6 md:w-8 h-24 md:h-20`;
+  const numberBoxStyle = `${commonBoxStyle} ${baseBoxStyle} ${mode === 'QS' ? activeTheme : cyanTheme} text-cyan-700 dark:text-cyan-400 text-center font-display text-xs py-1.5 px-3 min-w-[80px] tracking-wider pointer-events-auto`;
+  // const numberBoxStyle = `${baseBoxStyle} ${mode === 'QS' ? activeTheme : cyanTheme} w-24 md:w-20 h-8 md:h-8 text-center text-xs md:text-sm font-bold text-slate-900 dark:text-white`;
   return (
     <div className="col-span-6 flex flex-col h-full min-h-0">
       <GlassPanel className="flex flex-col h-full overflow-hidden relative border border-slate-200 dark:border-white/5">
@@ -109,8 +110,10 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
             {/* Front */}
             <div className="absolute top-[6px] inset-x-0 flex gap-24 justify-center z-20 pointer-events-none">
               <div className={numberBoxStyle}>
+                {formatAngle(frontLeft)}
               </div>
               <div className={numberBoxStyle}>
+                {formatAngle(frontRight)}
               </div>
             </div>
 
@@ -127,8 +130,10 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
             {/* Rear */}
             <div className="absolute bottom-[6px] inset-x-0 flex gap-24 justify-center z-20 pointer-events-none">
               <div className={numberBoxStyle}>
+                {formatAngle(rearLeft)}
               </div>
               <div className={numberBoxStyle}>
+                {formatAngle(rearRight)}
               </div>
             </div>
 

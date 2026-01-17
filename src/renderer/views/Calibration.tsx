@@ -14,6 +14,7 @@ import {
   getModeMeasurementKey,
   parseInboundData,
   toNumberOrNull,
+  validateSetpoints,
 } from '../utils/calibrationProtocol';
 import help1 from '../assets/help/ScreenShot_1.png';
 import help2 from '../assets/help/ScreenShot_2.png';
@@ -185,6 +186,124 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
     ];
   }, []);
 
+  const handleLockParams = () => {
+    if (!tcp.isTcpConnected) {
+      window.alert('请先连接系统！！再进行启动');
+      return;
+    }
+    if (!flow.mode) {
+      window.alert('请先选择测量模式（前束 / 外倾）！');
+      return;
+    }
+    if (!Object.values(wheels.selectedWheels).some(Boolean)) {
+      window.alert('请至少选中一个轮位！');
+      return;
+    }
+    if (!flow.paramsLocked) {
+      if (!validateSetpoints(flow.setpoints)) {
+        window.alert('请确保 A1-A6 已填写，且角度在 -90° ~ 90° 范围内！');
+        return;
+      }
+    }
+    flow.setAndToggleParamsLock();
+  };
+
+  const handleStartForward = () => {
+    if (!tcp.isTcpConnected) {
+      window.alert('请先连接系统！！再进行启动');
+      return;
+    }
+    if (!flow.mode) {
+      window.alert('请先选择测量模式（前束 / 外倾）！');
+      return;
+    }
+    if (!flow.paramsLocked) {
+      window.alert('请先设置参数！！再进行启动');
+      return;
+    }
+    if (!Object.values(wheels.selectedWheels).some(Boolean)) {
+      window.alert('请至少选中一个轮位！');
+      return;
+    }
+    flow.startStep('forward', wheels.selectedWheels);
+  };
+
+  const handleStartReverse = () => {
+    if (!tcp.isTcpConnected) {
+      window.alert('请先连接系统！！再进行启动');
+      return;
+    }
+    if (!flow.mode) {
+      window.alert('请先选择测量模式（前束 / 外倾）！');
+      return;
+    }
+    if (!flow.paramsLocked) {
+      window.alert('请先设置参数！！再进行启动');
+      return;
+    }
+    if (!Object.values(wheels.selectedWheels).some(Boolean)) {
+      window.alert('请至少选中一个轮位！');
+      return;
+    }
+    flow.startStep('reverse', wheels.selectedWheels);
+  };
+
+  const handleStartManualToe = () => {
+    if (!tcp.isTcpConnected) {
+      window.alert('请先连接系统！！再进行启动');
+      return;
+    }
+    const raw = flow.freeMeasure.toe.trim();
+    if (!raw) {
+      window.alert('请输入角度值！');
+      return;
+    }
+    const n = toNumberOrNull(raw);
+    if (n === null || n < -90 || n > 90) {
+      window.alert('角度必须为数字，且在 -90° ~ 90° 范围内！');
+      return;
+    }
+    if (!Object.values(wheels.selectedWheels).some(Boolean)) {
+      window.alert('请至少选中一个轮位！');
+      return;
+    }
+    flow.startManualToe();
+  };
+
+  const handleStartManualCamber = () => {
+    if (!tcp.isTcpConnected) {
+      window.alert('请先连接系统！！再进行启动');
+      return;
+    }
+    const raw = flow.freeMeasure.camber.trim();
+    if (!raw) {
+      window.alert('请输入角度值！');
+      return;
+    }
+    const n = toNumberOrNull(raw);
+    if (n === null || n < -90 || n > 90) {
+      window.alert('角度必须为数字，且在 -90° ~ 90° 范围内！');
+      return;
+    }
+    if (!Object.values(wheels.selectedWheels).some(Boolean)) {
+      window.alert('请至少选中一个轮位！');
+      return;
+    }
+    flow.startManualCamber();
+  };
+
+  const handleAction = (action: 'hm' | 'angle0' | 'zero') => {
+    if (!tcp.isTcpConnected) {
+      window.alert('请先连接系统！！再进行启动');
+      return;
+    }
+    if (!flow.mode) {
+      window.alert('请先选择测量模式（前束 / 外倾）！');
+      return;
+    }
+    flow.handleAction(action);
+  };
+
   return (
     <div className="h-screen w-screen flex flex-col font-sans bg-background-light text-slate-900 dark:bg-background-dark dark:text-slate-200 overflow-hidden relative">
       {tcp.showConnectionModal && (
@@ -275,7 +394,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
           activeWheel={wheels.activeWheel}
           onSelectWheel={(w) => wheels.setActiveWheel(w)}
           measurements={flow.measurements}
-          onAction={flow.handleAction}
+          onAction={handleAction}
         />
         <RightSidebar
           isConnected={tcp.isTcpConnected}
@@ -288,16 +407,16 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
           paramsLocked={flow.paramsLocked}
           kingpin={flow.kingpin}
           onChangeKingpin={flow.setKingpin}
-          onLockParams={flow.setAndToggleParamsLock}
+          onLockParams={handleLockParams}
           onCancel={flow.resetFlow}
-          onStartForward={() => flow.startStep('forward', wheels.selectedWheels)}
-          onStartReverse={() => flow.startStep('reverse', wheels.selectedWheels)}
+          onStartForward={handleStartForward}
+          onStartReverse={handleStartReverse}
           onSkipForward={() => flow.skipStep('forward')}
           onSkipReverse={() => flow.skipStep('reverse')}
           onStopForward={flow.stopStep}
           onStopReverse={flow.stopStep}
-          onStartManualToe={flow.startManualToe}
-          onStartManualCamber={flow.startManualCamber}
+          onStartManualToe={handleStartManualToe}
+          onStartManualCamber={handleStartManualCamber}
           disabled={false}
         />
       </main>
