@@ -1,6 +1,6 @@
 {
   "appId": "com.ruipuxi.app",
-  "productName": "Mechanical Calibration",
+  "productName": "Four Wheel Alignment Calibration System",
   "directories": {
     "output": "release/${version}",
     "buildResources": "build"

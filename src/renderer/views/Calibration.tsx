@@ -3,6 +3,10 @@ import { LeftSidebar } from '../components/LeftSidebar';
 import { CenterDisplay } from '../components/CenterDisplay';
 import { RightSidebar } from '../components/RightSidebar';
 import { ConnectionModal } from '../components/ConnectionModal';
+import help1 from '../assets/help/ScreenShot_1.png';
+import help2 from '../assets/help/ScreenShot_2.png';
+import help3 from '../assets/help/ScreenShot_3.png';
+import help4 from '../assets/help/ScreenShot_4.png';
 
 interface CalibrationProps {
   onBack: () => void;
@@ -24,8 +28,8 @@ type Measurements = {
 
 type StepStatus = 'idle' | 'running' | 'done';
 
-const DEFAULT_HOST = '127.0.0.1';
-const DEFAULT_PORT = 10001;
+const DEFAULT_HOST = '';
+const DEFAULT_PORT = 0;
 const MAX_RETRIES = 10;
 
 const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
@@ -41,6 +45,9 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
   const [lastRxAt, setLastRxAt] = useState<number | null>(null);
   const [trafficPulse, setTrafficPulse] = useState(false);
   const trafficPulseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [helpIndex, setHelpIndex] = useState(0);
 
   const [sensorOk, setSensorOk] = useState<boolean | null>(null);
   const [statusrc, setStatusrc] = useState<number | null>(null);
@@ -411,6 +418,18 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
     // 监听全屏状态变化
     window.electronAPI?.onFullscreenChanged(setIsFullscreen);
 
+    let cancelled = false;
+    window.electronAPI
+      ?.getTcpConfig?.()
+      .then(cfg => {
+        if (cancelled) return;
+        if (!cfg) return;
+        const host = typeof cfg.host === 'string' ? cfg.host.trim() : DEFAULT_HOST;
+        const port = Number.isFinite(cfg.port) ? cfg.port : DEFAULT_PORT;
+        setConnectionSettings({ ip: host, port });
+      })
+      .catch(() => {});
+
     // Notify main process that Calibration view is fully rendered
     // Use requestAnimationFrame to ensure DOM is painted
     requestAnimationFrame(() => {
@@ -422,13 +441,26 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
       });
     });
 
-    return () => clearInterval(interval);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, []);
 
   const startTest = (next?: { ip: string; port: number }) => {
+    const ip = next?.ip ?? connectionSettings.ip;
+    const port = next?.port ?? connectionSettings.port;
+    if (!ip || ip.trim() === '' || !Number.isFinite(port) || port <= 0) {
+      setTestRunning(false);
+      setTcpStatus('Disconnected');
+      setRetryCount(0);
+      setShowConnectionModal(true);
+      return;
+    }
     setTestRunning(true);
     setTcpStatus('Connecting');
-    window.electronAPI.connectTcp(next?.ip ?? connectionSettings.ip, next?.port ?? connectionSettings.port);
+    window.electronAPI.setTcpConfig?.(ip, port);
+    window.electronAPI.connectTcp(ip, port);
     setRetryCount(1);
     setShowConnectionModal(false);
   };
@@ -552,6 +584,35 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
     return tcpStatus;
   }, [tcpStatus, retryCount, displayedLatency, showConnectionModal]);
 
+  const helpSlides = useMemo(() => {
+    return [
+      { title: '帮助 1/4', src: help1 },
+      { title: '帮助 2/4', src: help2 },
+      { title: '帮助 3/4', src: help3 },
+      { title: '帮助 4/4', src: help4 },
+    ];
+  }, []);
+
+  useEffect(() => {
+    if (!showHelpModal) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowHelpModal(false);
+        return;
+      }
+      if (e.key === 'ArrowLeft') {
+        setHelpIndex(prev => Math.max(0, prev - 1));
+      }
+      if (e.key === 'ArrowRight') {
+        setHelpIndex(prev => Math.min(helpSlides.length - 1, prev + 1));
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [showHelpModal, helpSlides.length]);
+
   return (
     <div className="h-screen w-screen flex flex-col font-sans bg-background-dark text-slate-200 overflow-hidden relative">
       {showConnectionModal && (
@@ -563,6 +624,81 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
             startTest({ ip, port });
           }}
         />
+      )}
+
+      {showHelpModal && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setShowHelpModal(false)}
+        >
+          <div
+            className="w-full max-w-5xl rounded-2xl bg-slate-900/80 border border-white/10 shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="material-icons text-blue-400">help</span>
+                <div
+                  className="min-w-0"
+                  style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif' }}
+                >
+                  <div className="text-sm font-bold text-white truncate">{helpSlides[helpIndex]?.title ?? '帮助'}</div>
+                  <div className="text-[11px] text-slate-400">{`${helpIndex + 1} / ${helpSlides.length}`}</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowHelpModal(false)}
+                className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 transition flex items-center justify-center border border-slate-700"
+              >
+                <span className="material-icons text-sm">close</span>
+              </button>
+            </div>
+
+            <div className="bg-black/20">
+              <div className="w-full aspect-video flex items-center justify-center">
+                <img
+                  src={helpSlides[helpIndex]?.src}
+                  alt={helpSlides[helpIndex]?.title ?? 'help'}
+                  className="w-full h-full object-contain"
+                  draggable={false}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between px-5 py-4 border-t border-white/10">
+              <button
+                onClick={() => setHelpIndex(prev => Math.max(0, prev - 1))}
+                disabled={helpIndex <= 0}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm font-medium border ${
+                  helpIndex <= 0
+                    ? 'bg-slate-800/50 text-slate-500 border-slate-800 cursor-not-allowed'
+                    : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
+                }`}
+              >
+                <span className="material-icons text-sm">chevron_left</span>
+                上一页
+              </button>
+
+              <div className="text-xs text-slate-400 flex items-center gap-2">
+                <span className="material-icons text-sm">keyboard</span>
+                ESC 关闭 · ←/→ 翻页
+              </div>
+
+              <button
+                onClick={() => setHelpIndex(prev => Math.min(helpSlides.length - 1, prev + 1))}
+                disabled={helpIndex >= helpSlides.length - 1}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm font-medium border ${
+                  helpIndex >= helpSlides.length - 1
+                    ? 'bg-slate-800/50 text-slate-500 border-slate-800 cursor-not-allowed'
+                    : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
+                }`}
+              >
+                下一页
+                <span className="material-icons text-sm">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       
       {/* Header */}
@@ -580,7 +716,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
         </div>
         
         <div className="flex gap-3">
-          <button 
+          {/* <button 
             onClick={onBack}
             className="px-4 py-2 bg-slate-800 text-slate-300 rounded hover:bg-slate-700 transition flex items-center gap-2 text-sm font-medium border border-transparent hover:border-slate-600"
           >
@@ -592,7 +728,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
           >
             <span className="material-icons text-sm">{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</span> 
             {isFullscreen ? '退出全屏' : '全屏'}
-          </button>
+          </button> */}
           <button
             onClick={() => (testRunning ? stopTest() : startTest())}
             className={`px-4 py-2 rounded transition flex items-center gap-2 text-sm font-medium border ${
@@ -604,7 +740,13 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
             <span className={`material-icons text-sm ${testRunning ? (trafficPulse ? 'animate-pulse' : '') : ''}`}>{testRunning ? 'stop' : 'play_arrow'}</span>
             {testRunning ? '停止测试' : '启动测试'}
           </button>
-          <button className="px-4 py-2 bg-slate-800 text-slate-300 rounded hover:bg-slate-700 transition flex items-center gap-2 text-sm font-medium border border-transparent hover:border-slate-600">
+          <button
+            onClick={() => {
+              setHelpIndex(0);
+              setShowHelpModal(true);
+            }}
+            className="px-4 py-2 bg-slate-800 text-slate-300 rounded hover:bg-slate-700 transition flex items-center gap-2 text-sm font-medium border border-transparent hover:border-slate-600"
+          >
             <span className="material-icons text-sm">help_outline</span> 帮助
           </button>
           <button 
@@ -709,7 +851,10 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
              <div className={`w-1.5 h-1.5 rounded-full ${linkStable ? 'bg-accent-green animate-pulse' : 'bg-accent-red'}`}></div>
              <span className="font-bold tracking-wide text-[10px] sm:text-xs whitespace-nowrap">{linkStable ? 'LINK: OK' : 'LINK: LOST'}</span>
           </div>
-          <span className="text-slate-400 border-l border-slate-700 pl-3 whitespace-nowrap">
+          <span
+            className="text-slate-200 border-l border-slate-700 pl-3 whitespace-nowrap"
+            style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Arial, sans-serif' }}
+          >
             {statusText}
           </span>
         </div>
@@ -717,7 +862,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
         <div className="flex items-center gap-4 font-display tracking-wide shrink-0">
           <div className="hidden md:flex items-center gap-2 opacity-70">
              <span className="material-icons text-[10px]">my_location</span>
-             <span>IP：{displayedIp}</span>
+             <span>IP：{displayedIp}:{connectionSettings.port}</span>
           </div>
           <div className="text-slate-500 w-32 sm:w-48 text-right truncate">
             {time || 'INITIALIZING...'}

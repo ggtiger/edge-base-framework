@@ -6,6 +6,7 @@ import { setupSysInfoService } from './services/sysInfo'
 import { setupUpdateService } from './services/update'
 import { setupSerialService } from './services/serial'
 import { setupDllService } from './services/dll'
+import store from './store'
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith('6.1')) app.disableHardwareAcceleration()
@@ -192,6 +193,22 @@ ipcMain.handle('win:toggle-fullscreen', () => {
 
 ipcMain.handle('win:is-fullscreen', () => {
     return win?.isFullScreen() ?? false
+})
+
+ipcMain.handle('tcp:get-config', () => {
+    const cfg = store.get('tcpConfig')
+    const host = typeof cfg?.host === 'string' ? cfg.host.trim() : ''
+    const portNum = typeof cfg?.port === 'number' ? cfg.port : Number(cfg?.port)
+    const port = Number.isFinite(portNum) && portNum > 0 && portNum <= 65535 ? Math.floor(portNum) : 0
+    return { host, port }
+})
+
+ipcMain.handle('tcp:set-config', (_event, host: string, port: number) => {
+    const safeHost = typeof host === 'string' ? host.trim() : ''
+    const portNum = typeof port === 'number' ? port : Number(port)
+    const safePort = Number.isFinite(portNum) && portNum > 0 && portNum <= 65535 ? Math.floor(portNum) : 0
+    store.set('tcpConfig', { host: safeHost, port: safePort })
+    return { host: safeHost, port: safePort }
 })
 
 app.whenReady().then(async () => {

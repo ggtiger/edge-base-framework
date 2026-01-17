@@ -9,19 +9,20 @@ interface ConnectionModalProps {
 
 export const ConnectionModal: React.FC<ConnectionModalProps> = ({ initialIp, initialPort, onConnect }) => {
   const [ip, setIp] = useState(initialIp);
-  const [port, setPort] = useState(initialPort.toString());
+  const [port, setPort] = useState(initialPort > 0 ? initialPort.toString() : '');
 
   // Update local state if props change (though typically this modal unmounts on success)
   useEffect(() => {
     setIp(initialIp);
-    setPort(initialPort.toString());
+    setPort(initialPort > 0 ? initialPort.toString() : '');
   }, [initialIp, initialPort]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const portNum = parseInt(port, 10);
-    if (ip && !isNaN(portNum)) {
-      onConnect(ip, portNum);
+    const safeIp = ip.trim();
+    if (safeIp && !isNaN(portNum)) {
+      onConnect(safeIp, portNum);
     }
   };
 

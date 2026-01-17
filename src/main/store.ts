@@ -1,4 +1,15 @@
-import Store from 'electron-store'
+type ElectronStoreCtor = typeof import('electron-store').default
+
+const electronStoreModule = require('electron-store') as any
+const Store = (typeof electronStoreModule === 'function'
+    ? electronStoreModule
+    : typeof electronStoreModule?.default === 'function'
+      ? electronStoreModule.default
+      : typeof electronStoreModule?.default?.default === 'function'
+        ? electronStoreModule.default.default
+        : null) as ElectronStoreCtor | null
+
+if (!Store) throw new Error('electron-store import failed')
 
 interface StoreSchema {
     windowBounds: {
@@ -16,7 +27,7 @@ interface StoreSchema {
 const store = new Store<StoreSchema>({
     defaults: {
         windowBounds: { width: 1024, height: 768 },
-        tcpConfig: { host: '127.0.0.1', port: 8080 }
+        tcpConfig: { host: '', port: 0 }
     }
 })
 

@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   sendTcp: (data: string) => ipcRenderer.send('tcp:send', data),
   onTcpData: (callback: (data: string) => void) => ipcRenderer.on('tcp:data-received', (_, data) => callback(data)),
   onTcpStatus: (callback: (status: string) => void) => ipcRenderer.on('tcp:status-change', (_, status) => callback(status)),
+  getTcpConfig: () => ipcRenderer.invoke('tcp:get-config'),
+  setTcpConfig: (host: string, port: number) => ipcRenderer.invoke('tcp:set-config', host, port),
 
   // Serial
   openSerial: (path: string, baudRate: number) => ipcRenderer.send('serial:open', path, baudRate),
