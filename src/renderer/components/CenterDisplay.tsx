@@ -1,0 +1,155 @@
+import React from 'react';
+import { GlassPanel } from './GlassPanel';
+import chassisSvg from '../assets/images/chassis.svg';
+
+type Mode = 'QS' | 'WQ' | null;
+type WheelId = 'FL' | 'FR' | 'RL' | 'RR';
+
+type Measurements = {
+  qzq: string;
+  qyq: string;
+  qzh: string;
+  qyh: string;
+  wzq: string;
+  wyq: string;
+  wzh: string;
+  wyh: string;
+};
+
+type CenterAction = 'hm' | 'angle0' | 'zero';
+
+interface CenterDisplayProps {
+  mode: Mode;
+  activeWheel: WheelId | null;
+  onSelectWheel: (wheel: WheelId) => void;
+  measurements: Measurements;
+  onAction: (action: CenterAction) => void;
+}
+
+export const CenterDisplay: React.FC<CenterDisplayProps> = ({
+  mode,
+  activeWheel,
+  onSelectWheel,
+  measurements,
+  onAction,
+}) => {
+
+  const wheels: { id: WheelId; label: string }[] = [
+    { id: 'FL', label: '左前' },
+    { id: 'FR', label: '右前' },
+    { id: 'RL', label: '左后' },
+    { id: 'RR', label: '右后' },
+  ];
+
+  const formatAngle = (v: string) => {
+    const n = Number(v);
+    if (Number.isFinite(n)) return `${n.toFixed(2)}°`;
+    if (!v.trim()) return '--.--°';
+    return `${v.trim()}°`;
+  };
+
+  const frontLeft = mode === 'QS' ? measurements.qzq : mode === 'WQ' ? measurements.wzq : '';
+  const frontRight = mode === 'QS' ? measurements.qyq : mode === 'WQ' ? measurements.wyq : '';
+  const rearLeft = mode === 'QS' ? measurements.qzh : mode === 'WQ' ? measurements.wzh : '';
+  const rearRight = mode === 'QS' ? measurements.qyh : mode === 'WQ' ? measurements.wyh : '';
+
+  return (
+    <div className="col-span-6 flex flex-col h-full min-h-0">
+      <GlassPanel className="flex flex-col h-full overflow-hidden relative border border-white/5">
+        {/* Top Wheel Selectors */}
+        <div className="grid grid-cols-4 gap-2 p-4 bg-white/5 dark:bg-slate-900/30 border-b border-white/10 backdrop-blur-sm z-20 flex-shrink-0">
+          {wheels.map((wheel) => (
+            <button
+              key={wheel.id}
+              onClick={() => onSelectWheel(wheel.id)}
+              className={`btn-futuristic py-2 rounded text-xs font-bold tracking-wide transition-all
+                ${activeWheel === wheel.id 
+                  ? 'bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)] border-blue-400/50' 
+                  : 'bg-slate-800/50 text-slate-400 border-slate-700/50 hover:bg-slate-800 hover:text-white hover:border-blue-500/50'
+                }`}
+            >
+              {wheel.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Main Visualization Area */}
+        <div className="flex-grow flex items-center justify-center p-8 relative overflow-hidden group">
+          {/* Grid Background */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none bg-grid-pattern"></div>
+          
+          {/* Decorative Corner Brackets */}
+          <div className="absolute top-8 left-8 w-16 h-16 border-t-2 border-l-2 border-primary/20 rounded-tl-lg"></div>
+          <div className="absolute top-8 right-8 w-16 h-16 border-t-2 border-r-2 border-primary/20 rounded-tr-lg"></div>
+          <div className="absolute bottom-8 left-8 w-16 h-16 border-b-2 border-l-2 border-primary/20 rounded-bl-lg"></div>
+          <div className="absolute bottom-8 right-8 w-16 h-16 border-b-2 border-r-2 border-primary/20 rounded-br-lg"></div>
+
+          {/* Visualization Container */}
+          <div className="relative w-full h-full flex items-center justify-center">
+            
+            {/* Car Image (SVG) */}
+            <img 
+              alt="Automobile Chassis Top View" 
+              className="max-h-full max-w-full object-contain filter drop-shadow-[0_0_15px_rgba(59,130,246,0.3)] opacity-90 transform transition-transform duration-700 hover:scale-105" 
+              src={chassisSvg}
+            />
+
+            {/* Overlays: Measurements */}
+            {/* Front */}
+            <div className="absolute top-4 inset-x-0 flex gap-4 justify-center z-20 pointer-events-none">
+              <div className="bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
+                {formatAngle(frontLeft)}
+              </div>
+              <div className="bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
+                {formatAngle(frontRight)}
+              </div>
+            </div>
+
+             {/* Wheel Indicators (Visual boxes near wheels) */}
+            <div className="absolute inset-y-0 left-[5%] md:left-[10%] flex flex-col justify-between py-[15%] md:py-[10%] pointer-events-none opacity-50">
+                <div className="w-6 md:w-8 h-24 md:h-32 border-2 border-primary/30 rounded-sm bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.1)]"></div>
+                <div className="w-6 md:w-8 h-24 md:h-32 border-2 border-primary/30 rounded-sm bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.1)]"></div>
+            </div>
+            <div className="absolute inset-y-0 right-[5%] md:right-[10%] flex flex-col justify-between py-[15%] md:py-[10%] pointer-events-none opacity-50">
+                <div className="w-6 md:w-8 h-24 md:h-32 border-2 border-primary/30 rounded-sm bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.1)]"></div>
+                <div className="w-6 md:w-8 h-24 md:h-32 border-2 border-primary/30 rounded-sm bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.1)]"></div>
+            </div>
+
+            {/* Rear */}
+            <div className="absolute bottom-4 inset-x-0 flex gap-4 justify-center z-20 pointer-events-none">
+              <div className="bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
+                {formatAngle(rearLeft)}
+              </div>
+              <div className="bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 text-cyan-400 text-center font-display text-xs py-1.5 px-3 rounded shadow-[0_0_15px_rgba(6,182,212,0.15)] min-w-[80px] tracking-wider pointer-events-auto">
+                {formatAngle(rearRight)}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Bottom Actions */}
+        <div className="grid grid-cols-3 gap-3 p-4 bg-white/5 dark:bg-slate-900/30 border-t border-white/10 backdrop-blur-sm z-20 flex-shrink-0">
+          <button
+            onClick={() => onAction('hm')}
+            className="py-3 bg-slate-800 border border-slate-700 rounded text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-700 hover:border-slate-600 transition-all shadow-sm"
+          >
+            外倾丝杆复位
+          </button>
+          <button
+            onClick={() => onAction('angle0')}
+            className="py-3 bg-slate-800 border border-slate-700 rounded text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-700 hover:border-slate-600 transition-all shadow-sm"
+          >
+            回零
+          </button>
+          <button
+            onClick={() => onAction('zero')}
+            className="py-3 bg-slate-800 border border-slate-700 rounded text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-700 hover:border-slate-600 transition-all shadow-sm"
+          >
+            置零
+          </button>
+        </div>
+      </GlassPanel>
+    </div>
+  );
+};

@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Orbitron';
+  src: url(./assets/fonts/yMJRMIlzdpvBhQQL_Qq7dy1biN15.woff2) format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Noto Sans SC';
+  src: url(./assets/fonts/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2) format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(./assets/icons/MaterialIcons-Regular.woff2) format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+@theme {
+  --color-primary: #3b82f6;
+  --color-background-light: #f1f5f9;
+  --color-background-dark: #0f172a;
+  --color-accent-red: #ef4444;
+  --color-accent-green: #22c55e;
+  --color-panel-dark: #1e293b;
+
+  --font-display: "Orbitron", "Noto Sans SC", "sans-serif";
+  --font-sans: "Noto Sans SC", "sans-serif";
+
+  --radius-DEFAULT: 0.5rem;
+  
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+html, body, #app {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+@theme {
+  --color-primary: #3b82f6;
+  --color-background-light: #f1f5f9;
+  --color-background-dark: #0f172a;
+  --color-accent-red: #ef4444;
+  --color-accent-green: #22c55e;
+  --color-panel-dark: #1e293b;
+
+  --font-display: "Orbitron", "Noto Sans SC", "sans-serif";
+  --font-sans: "Noto Sans SC", "sans-serif";
+
+  --radius-DEFAULT: 0.5rem;
+  
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Custom Button Effects */
+.btn-futuristic {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+.btn-futuristic:hover {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+    border-color: rgba(59, 130, 246, 0.5);
+    transform: translateY(-1px);
+}
+.btn-futuristic:active {
+    transform: translateY(1px);
+}
+
+/* Vertical Text Utility */
+.vertical-text {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    letter-spacing: 0.1em;
+}
+
+/* Grid Background Pattern */
+.bg-grid-pattern {
+    background-image: radial-gradient(circle, #3b82f6 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
+/* Scrollbar styling for webkit */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #0f172a; 
+}
+::-webkit-scrollbar-thumb {
+    background: #334155; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #475569; 
+}

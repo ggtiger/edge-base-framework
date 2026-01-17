@@ -1,0 +1,14 @@
+FROM electronuserland/builder:wine
+
+WORKDIR /project
+
+# Copy project files (respecting .dockerignore)
+COPY . .
+
+# Install dependencies (native modules will be built for Linux/Wine)
+RUN npm install
+
+# Build for Windows
+# We use 'npm run build -- --win' to pass the --win flag to electron-builder
+# The build script is: "tsc --noEmit && vite build && electron-builder"
+RUN npm run build -- --win

@@ -1,0 +1,39 @@
+{
+  "appId": "com.ruipuxi.app",
+  "productName": "Mechanical Calibration",
+  "directories": {
+    "output": "release/${version}",
+    "buildResources": "build"
+  },
+  "files": [
+    "dist",
+    "dist-electron",
+    "package.json",
+    "splash.html"
+  ],
+  "mac": {
+    "icon": "icon.png",
+    "target": ["dmg"]
+  },
+  "win": {
+    "icon": "icon.png",
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true
+  },
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "username",
+      "repo": "repo"
+    }
+  ]
+}

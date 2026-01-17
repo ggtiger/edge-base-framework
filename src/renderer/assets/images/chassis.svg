@@ -1,0 +1,52 @@
+<svg viewBox="0 0 300 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="metal-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="50%" stop-color="#94a3b8" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+  </defs>
+  
+  <g transform="translate(0, 0)">
+    <!-- Tires -->
+    <rect x="20" y="50" width="40" height="80" rx="8" fill="#1e293b" stroke="#475569" stroke-width="2" />
+    <path d="M 25 55 L 25 125 M 35 55 L 35 125 M 45 55 L 45 125 M 55 55 L 55 125" stroke="#334155" stroke-width="1" />
+    
+    <rect x="240" y="50" width="40" height="80" rx="8" fill="#1e293b" stroke="#475569" stroke-width="2" />
+    <path d="M 245 55 L 245 125 M 255 55 L 255 125 M 265 55 L 265 125 M 275 55 L 275 125" stroke="#334155" stroke-width="1" />
+
+    <rect x="20" y="370" width="40" height="80" rx="8" fill="#1e293b" stroke="#475569" stroke-width="2" />
+    <path d="M 25 375 L 25 445 M 35 375 L 35 445 M 45 375 L 45 445 M 55 375 L 55 445" stroke="#334155" stroke-width="1" />
+
+    <rect x="240" y="370" width="40" height="80" rx="8" fill="#1e293b" stroke="#475569" stroke-width="2" />
+    <path d="M 245 375 L 245 445 M 255 375 L 255 445 M 265 375 L 265 445 M 275 375 L 275 445" stroke="#334155" stroke-width="1" />
+
+    <!-- Axles -->
+    <rect x="60" y="80" width="180" height="15" fill="url(#metal-gradient)" rx="4" />
+    <rect x="60" y="405" width="180" height="15" fill="url(#metal-gradient)" rx="4" />
+    
+    <!-- Suspension Arms -->
+    <line x1="60" y1="87" x2="100" y2="100" stroke="#475569" stroke-width="4" />
+    <line x1="240" y1="87" x2="200" y2="100" stroke="#475569" stroke-width="4" />
+    <line x1="60" y1="412" x2="100" y2="400" stroke="#475569" stroke-width="4" />
+    <line x1="240" y1="412" x2="200" y2="400" stroke="#475569" stroke-width="4" />
+
+    <!-- Main Chassis Frame -->
+    <path d="M 90 100 L 90 400 L 210 400 L 210 100 Z" fill="#1e293b" stroke="#334155" stroke-width="2" />
+    <path d="M 100 110 L 100 390 L 200 390 L 200 110 Z" fill="none" stroke="#334155" stroke-dasharray="5 5" />
+    
+    <!-- Engine / Components -->
+    <rect x="110" y="110" width="80" height="70" rx="5" fill="#475569" />
+    <circle cx="150" cy="145" r="15" fill="#64748b" />
+    
+    <!-- Drive Shaft -->
+    <rect x="146" y="180" width="8" height="220" fill="#64748b" />
+    
+    <!-- Differential -->
+    <circle cx="150" cy="412" r="20" fill="#475569" />
+    
+    <!-- Exhaust System -->
+    <path d="M 130 180 Q 130 300 120 480" fill="none" stroke="#475569" stroke-width="6" />
+    <rect x="115" y="480" width="10" height="15" fill="#64748b" />
+  </g>
+</svg>
