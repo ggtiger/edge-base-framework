@@ -103,8 +103,8 @@ async function createWindow() {
       }
       // 2. 显示主窗口并设置全屏
       if (win && !win.isVisible()) {
-        //win.show()
         win.setFullScreen(true)
+        win.show()
         // 通知渲染进程全屏状态变化
         win.webContents.send('fullscreen-changed', true)
       }
