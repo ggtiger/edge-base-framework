@@ -36,8 +36,11 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
   const [retryCount, setRetryCount] = useState(0);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
 
+  const [testRunning, setTestRunning] = useState(false);
   const [tcpStatus, setTcpStatus] = useState<string>('Disconnected');
   const [lastRxAt, setLastRxAt] = useState<number | null>(null);
+  const [trafficPulse, setTrafficPulse] = useState(false);
+  const trafficPulseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [sensorOk, setSensorOk] = useState<boolean | null>(null);
   const [statusrc, setStatusrc] = useState<number | null>(null);
@@ -422,12 +425,27 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    // Initial connection attempt when settings change
-    window.electronAPI.connectTcp(connectionSettings.ip, connectionSettings.port);
+  const startTest = (next?: { ip: string; port: number }) => {
+    setTestRunning(true);
+    setTcpStatus('Connecting');
+    window.electronAPI.connectTcp(next?.ip ?? connectionSettings.ip, next?.port ?? connectionSettings.port);
     setRetryCount(1);
     setShowConnectionModal(false);
-  }, [connectionSettings]);
+  };
+
+  const stopTest = () => {
+    setTestRunning(false);
+    setTcpStatus('Disconnected');
+    setRetryCount(0);
+    setShowConnectionModal(false);
+    setLastRxAt(null);
+    setTrafficPulse(false);
+    if (trafficPulseTimerRef.current) {
+      clearTimeout(trafficPulseTimerRef.current);
+      trafficPulseTimerRef.current = null;
+    }
+    window.electronAPI.disconnectTcp();
+  };
 
   useEffect(() => {
     window.electronAPI.onTcpStatus((status) => {
@@ -435,12 +453,25 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
     });
     window.electronAPI.onTcpData((data) => {
       setLastRxAt(Date.now());
+      setTrafficPulse(true);
+      if (trafficPulseTimerRef.current) clearTimeout(trafficPulseTimerRef.current);
+      trafficPulseTimerRef.current = setTimeout(() => {
+        setTrafficPulse(false);
+      }, 160);
       parseInbound(data, stateRef.current);
     });
+
+    return () => {
+      if (trafficPulseTimerRef.current) {
+        clearTimeout(trafficPulseTimerRef.current);
+        trafficPulseTimerRef.current = null;
+      }
+    };
   }, []);
 
   // Retry logic
   useEffect(() => {
+    if (!testRunning) return;
     if (tcpStatus === 'Connected') {
       setRetryCount(0);
       setShowConnectionModal(false);
@@ -467,15 +498,16 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [tcpStatus, retryCount, showConnectionModal, connectionSettings]);
+  }, [tcpStatus, retryCount, showConnectionModal, connectionSettings, testRunning]);
 
   useEffect(() => {
     if (!isTcpConnected) return;
+    if (!testRunning) return;
     const interval = setInterval(() => {
       window.electronAPI.sendTcp('S1F1');
     }, 1000);
     return () => clearInterval(interval);
-  }, [isTcpConnected]);
+  }, [isTcpConnected, testRunning]);
 
   useEffect(() => {
     if (!isTcpConnected) return;
@@ -511,7 +543,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
     const max = Number(MAX_RETRIES);
     
     if (current > 0 && current < max) {
-      return `正在重连 (${current} / ${max})...`;
+      return `正在重连 (${current}/${max})...`;
     }
     
     if (tcpStatus === 'Disconnected') return '未连接';
@@ -526,7 +558,10 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
         <ConnectionModal
           initialIp={connectionSettings.ip}
           initialPort={connectionSettings.port}
-          onConnect={(ip, port) => setConnectionSettings({ ip, port })}
+          onConnect={(ip, port) => {
+            setConnectionSettings({ ip, port });
+            startTest({ ip, port });
+          }}
         />
       )}
       
@@ -558,6 +593,17 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
             <span className="material-icons text-sm">{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</span> 
             {isFullscreen ? '退出全屏' : '全屏'}
           </button>
+          <button
+            onClick={() => (testRunning ? stopTest() : startTest())}
+            className={`px-4 py-2 rounded transition flex items-center gap-2 text-sm font-medium border ${
+              testRunning
+                ? 'bg-accent-red/10 text-accent-red border-accent-red/20 hover:bg-accent-red hover:text-white'
+                : 'bg-blue-600/10 text-blue-300 border-blue-500/20 hover:bg-blue-600 hover:text-white'
+            }`}
+          >
+            <span className={`material-icons text-sm ${testRunning ? (trafficPulse ? 'animate-pulse' : '') : ''}`}>{testRunning ? 'stop' : 'play_arrow'}</span>
+            {testRunning ? '停止测试' : '启动测试'}
+          </button>
           <button className="px-4 py-2 bg-slate-800 text-slate-300 rounded hover:bg-slate-700 transition flex items-center gap-2 text-sm font-medium border border-transparent hover:border-slate-600">
             <span className="material-icons text-sm">help_outline</span> 帮助
           </button>
@@ -575,6 +621,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
         <LeftSidebar
           tcpStatus={tcpStatus}
           linkStable={linkStable}
+          trafficPulse={trafficPulse}
           sensorOk={sensorOk}
           mode={mode}
           onSelectMode={(m: 'QS' | 'WQ') => {

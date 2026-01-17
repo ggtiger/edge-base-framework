@@ -7,6 +7,7 @@ type WheelId = 'FL' | 'FR' | 'RL' | 'RR';
 interface LeftSidebarProps {
   tcpStatus: string;
   linkStable: boolean;
+  trafficPulse: boolean;
   sensorOk: boolean | null;
   mode: Mode;
   onSelectMode: (mode: Exclude<Mode, null>) => void;
@@ -20,6 +21,7 @@ interface LeftSidebarProps {
 export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   tcpStatus,
   linkStable,
+  trafficPulse,
   sensorOk,
   mode,
   onSelectMode,
@@ -62,7 +64,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                          <span className="relative flex h-2 w-2">
                             {systemOnline ? (
                               <>
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className={`absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 ${trafficPulse ? 'animate-ping' : ''}`}></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                               </>
                             ) : (
@@ -93,7 +95,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                 <div className="flex items-center justify-center gap-2 py-2 relative z-10">
                     <span className="text-[10px] font-bold tracking-[0.15em] text-slate-400 group-hover:text-white transition-colors">{`SENSOR: ${sensorText}`}</span>
                     <div className="w-5 h-5 rounded bg-black/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                        <span className={`material-icons text-xs ${sensorOk ? 'text-emerald-500' : 'text-red-500'} group-hover:text-white transition-colors`}>sensors</span>
+                        <span className={`material-icons text-xs ${sensorOk ? 'text-emerald-500' : 'text-red-500'} group-hover:text-white transition-colors ${trafficPulse ? 'animate-pulse' : ''}`}>sensors</span>
                     </div>
                 </div>
             </button>
