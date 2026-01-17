@@ -87,11 +87,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onOpenCalibration }) => {
     }
     const handleUpdateStatus = (status: string) => setUpdateStatus(status)
 
-    window.electronAPI.onTcpData(handleTcpData)
+    const cleanupTcp = window.electronAPI.onTcpData(handleTcpData)
     window.electronAPI.onUpdateStatus(handleUpdateStatus)
 
     return () => {
-      // Cleanup logic if supported by bridge
+      cleanupTcp()
     }
   }, [])
 

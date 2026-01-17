@@ -8,8 +8,8 @@ interface Window {
     connectTcp: (host: string, port: number) => void
     disconnectTcp: () => void
     sendTcp: (data: string) => void
-    onTcpData: (callback: (data: string) => void) => void
-    onTcpStatus: (callback: (status: string) => void) => void
+    onTcpData: (callback: (data: string) => void) => () => void
+    onTcpStatus: (callback: (status: string) => void) => () => void
     getTcpConfig: () => Promise<{ host: string; port: number }>
     setTcpConfig: (host: string, port: number) => Promise<{ host: string; port: number }>
 

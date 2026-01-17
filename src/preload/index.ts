@@ -5,8 +5,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   connectTcp: (host: string, port: number) => ipcRenderer.send('tcp:connect', host, port),
   disconnectTcp: () => ipcRenderer.send('tcp:disconnect'),
   sendTcp: (data: string) => ipcRenderer.send('tcp:send', data),
-  onTcpData: (callback: (data: string) => void) => ipcRenderer.on('tcp:data-received', (_, data) => callback(data)),
-  onTcpStatus: (callback: (status: string) => void) => ipcRenderer.on('tcp:status-change', (_, status) => callback(status)),
+  onTcpData: (callback: (data: string) => void) => {
+    const subscription = (_: any, data: string) => callback(data)
+    ipcRenderer.on('tcp:data-received', subscription)
+    return () => {
+      ipcRenderer.removeListener('tcp:data-received', subscription)
+    }
+  },
+  onTcpStatus: (callback: (status: string) => void) => {
+    const subscription = (_: any, status: string) => callback(status)
+    ipcRenderer.on('tcp:status-change', subscription)
+    return () => {
+      ipcRenderer.removeListener('tcp:status-change', subscription)
+    }
+  },
   getTcpConfig: () => ipcRenderer.invoke('tcp:get-config'),
   setTcpConfig: (host: string, port: number) => ipcRenderer.invoke('tcp:set-config', host, port),
 

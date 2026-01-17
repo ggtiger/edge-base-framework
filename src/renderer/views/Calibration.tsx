@@ -3,6 +3,7 @@ import { LeftSidebar } from '../components/LeftSidebar';
 import { CenterDisplay } from '../components/CenterDisplay';
 import { RightSidebar } from '../components/RightSidebar';
 import { ConnectionModal } from '../components/ConnectionModal';
+import { TcpLogViewer } from '../components/TcpLogViewer';
 import help1 from '../assets/help/ScreenShot_1.png';
 import help2 from '../assets/help/ScreenShot_2.png';
 import help3 from '../assets/help/ScreenShot_3.png';
@@ -82,6 +83,16 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
   const [stepStatus, setStepStatus] = useState<StepStatus[]>(Array(6).fill('idle'));
   const [pls, setPls] = useState('');
   const [sendEnabled, setSendEnabled] = useState(false);
+  const [tcpLogs, setTcpLogs] = useState<{ direction: 'TX' | 'RX' | 'SYS'; content: string; timestamp: number }[]>([]);
+
+  const addTcpLog = React.useCallback((direction: 'TX' | 'RX' | 'SYS', content: string) => {
+    setTcpLogs(prev => [{ direction, content, timestamp: Date.now() }, ...prev].slice(0, 100));
+  }, []);
+
+  const sendTcpCmd = React.useCallback((cmd: string) => {
+    window.electronAPI.sendTcp(cmd);
+    addTcpLog('TX', cmd);
+  }, [addTcpLog]);
 
   const stateRef = useRef({
     mode,
@@ -456,8 +467,10 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
       setShowConnectionModal(true);
       return;
     }
+    
     setTestRunning(true);
     setTcpStatus('Connecting');
+    addTcpLog('SYS', `Connecting to ${ip}:${port}...`);
     window.electronAPI.setTcpConfig?.(ip, port);
     window.electronAPI.connectTcp(ip, port);
     setRetryCount(1);
@@ -475,30 +488,35 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
       clearTimeout(trafficPulseTimerRef.current);
       trafficPulseTimerRef.current = null;
     }
+    addTcpLog('SYS', 'Disconnecting...');
     window.electronAPI.disconnectTcp();
   };
 
   useEffect(() => {
-    window.electronAPI.onTcpStatus((status) => {
+    const removeStatusListener = window.electronAPI.onTcpStatus((status) => {
       setTcpStatus(status);
+      addTcpLog('SYS', `Status: ${status}`);
     });
-    window.electronAPI.onTcpData((data) => {
+    const removeDataListener = window.electronAPI.onTcpData((data) => {
       setLastRxAt(Date.now());
       setTrafficPulse(true);
       if (trafficPulseTimerRef.current) clearTimeout(trafficPulseTimerRef.current);
       trafficPulseTimerRef.current = setTimeout(() => {
         setTrafficPulse(false);
       }, 160);
+      addTcpLog('RX', data);
       parseInbound(data, stateRef.current);
     });
 
     return () => {
+      removeStatusListener();
+      removeDataListener();
       if (trafficPulseTimerRef.current) {
         clearTimeout(trafficPulseTimerRef.current);
         trafficPulseTimerRef.current = null;
       }
     };
-  }, []);
+  }, [addTcpLog]);
 
   // Retry logic
   useEffect(() => {
@@ -510,7 +528,26 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
     }
 
     if (showConnectionModal) return;
-    if (retryCount <= 0) return;
+    
+    // If we are disconnected but testRunning is true, we should retry.
+    // If retryCount is 0 (which happens after a successful connection resets it),
+    // we need to set it to 1 to start the retry sequence.
+    if (retryCount <= 0) {
+       if (
+         tcpStatus === 'Disconnected' ||
+         tcpStatus === 'Closed' ||
+         tcpStatus.includes('Error') ||
+         tcpStatus.startsWith('TCP Error')
+       ) {
+          setRetryCount(1);
+          // Trigger immediate reconnection attempt for better UX?
+          // Or wait for the effect to run again? 
+          // If we just setRetryCount(1), the component re-renders, 
+          // and the next pass will hit the setTimeout logic below.
+          return;
+       }
+       return;
+    }
 
     if (retryCount >= MAX_RETRIES) {
       setShowConnectionModal(true);
@@ -535,10 +572,10 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
     if (!isTcpConnected) return;
     if (!testRunning) return;
     const interval = setInterval(() => {
-      window.electronAPI.sendTcp('S1F1');
+      sendTcpCmd('S1F1');
     }, 1000);
     return () => clearInterval(interval);
-  }, [isTcpConnected, testRunning]);
+  }, [isTcpConnected, testRunning, sendTcpCmd]);
 
   useEffect(() => {
     if (!isTcpConnected) return;
@@ -548,11 +585,11 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
 
     const interval = setInterval(() => {
       const cmd = buildCommand(mode, pls);
-      window.electronAPI.sendTcp(cmd);
+      sendTcpCmd(cmd);
     }, 200);
 
     return () => clearInterval(interval);
-  }, [isTcpConnected, mode, pls, selectedWheels, sendEnabled]);
+  }, [isTcpConnected, mode, pls, selectedWheels, sendEnabled, sendTcpCmd]);
 
   const handleToggleFullscreen = async () => {
     const newState = await window.electronAPI.toggleFullscreen();
@@ -851,18 +888,23 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
       </main>
 
       {/* Footer */}
-      <footer className="h-10 shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between z-50 text-xs font-medium text-slate-600 dark:text-slate-500 overflow-hidden">
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-2 px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shrink-0">
+      <footer className="h-10 shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between z-50 text-xs font-medium text-slate-600 dark:text-slate-500">
+        <div className="flex items-center shrink-0 h-7 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md overflow-visible shadow-sm">
+          <div className="flex items-center gap-2 px-3 h-full shrink-0">
              <div className={`w-1.5 h-1.5 rounded-full ${linkStable ? 'bg-accent-green animate-pulse' : 'bg-accent-red'}`}></div>
-             <span className="font-bold tracking-wide text-[10px] sm:text-xs whitespace-nowrap">{linkStable ? 'LINK: OK' : 'LINK: LOST'}</span>
+             <span className="font-bold tracking-wide text-[10px] sm:text-xs whitespace-nowrap text-slate-600 dark:text-slate-400">{linkStable ? 'LINK: OK' : 'LINK: LOST'}</span>
           </div>
-          <span
-            className="text-slate-900 dark:text-slate-200 border-l border-slate-200 dark:border-slate-700 pl-3 whitespace-nowrap"
+          
+          <div className="w-px h-full bg-slate-200 dark:bg-slate-700"></div>
+
+          <div 
+            className="px-3 text-slate-900 dark:text-slate-200 whitespace-nowrap h-full flex items-center"
             style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Arial, sans-serif' }}
           >
             {statusText}
-          </span>
+          </div>
+          
+          <TcpLogViewer logs={tcpLogs} />
         </div>
         
         <div className="flex items-center gap-4 font-display tracking-wide shrink-0">
