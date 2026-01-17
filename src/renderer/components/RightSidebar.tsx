@@ -12,6 +12,7 @@ interface RightSidebarProps {
   onChangeSetpoints: (next: string[]) => void;
   step: number;
   stepStatus: StepStatus[];
+  activeDirection: 'forward' | 'reverse' | null;
   paramsLocked: boolean;
   kingpin: string;
   onChangeKingpin: (next: string) => void;
@@ -36,6 +37,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   onChangeSetpoints,
   step,
   stepStatus,
+  activeDirection,
   paramsLocked,
   kingpin,
   onChangeKingpin,
@@ -81,18 +83,33 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
     const status = stepStatus[index] ?? 'idle';
     const isCurrent = step === index + 1;
     const base =
-      'bg-slate-50 dark:bg-slate-900 border rounded text-xs py-1.5 px-2 text-center font-display focus:border-primary outline-none transition-all cursor-pointer hover:border-blue-500/50';
+      'bg-slate-50 dark:bg-slate-900 border rounded text-xs py-1.5 px-2 text-center font-display focus:border-primary outline-none transition-all cursor-pointer';
 
     if (status === 'done') {
-      return `${base} border-emerald-500/60 shadow-[0_0_10px_rgba(16,185,129,0.15)]`;
+      return `${base} border-emerald-500/80 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 shadow-[0_0_16px_rgba(16,185,129,0.45)]`;
     }
-    if (status === 'running' || isCurrent) {
-      return `${base} border-red-600/80 dark:border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.18)]`;
+    if (status === 'running') {
+      return `${base} border-2 border-red-600 dark:border-red-500 bg-red-600/90 text-white shadow-[0_0_18px_rgba(239,68,68,0.8)] animate-pulse`;
+    }
+    if (isCurrent) {
+      return `${base} border-2 border-blue-500 dark:border-blue-400 bg-blue-500/5 text-slate-900 dark:text-slate-100 shadow-[0_0_12px_rgba(59,130,246,0.45)]`;
     }
     return `${base} border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800`;
   };
 
   const canOperate = isConnected && !disabled;
+  const anyRunning = stepStatus.some(s => s === 'running');
+  const allDone = stepStatus.length > 0 && stepStatus.every(s => s === 'done');
+  const canStartForward =
+    canOperate &&
+    !anyRunning &&
+    (allDone || !activeDirection || activeDirection === 'forward');
+  const canStartReverse =
+    canOperate &&
+    !anyRunning &&
+    (allDone || !activeDirection || activeDirection === 'reverse');
+  const canControlForward = canOperate && anyRunning && activeDirection === 'forward';
+  const canControlReverse = canOperate && anyRunning && activeDirection === 'reverse';
 
   return (
     <div className="col-span-3 flex flex-col gap-4 h-full relative">
@@ -202,10 +219,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
           {/* Forward */}
           <div className="grid grid-cols-3 gap-2 shrink-0">
             <button
-              disabled={!canOperate}
+              disabled={!canStartForward}
               onClick={onStartForward}
               className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
-                canOperate
+                canStartForward
                   ? 'bg-blue-600 hover:bg-blue-500 text-white border-blue-500 shadow-md hover:shadow-lg'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-300 border-slate-300 dark:border-slate-600 opacity-50 cursor-not-allowed'
               }`}
@@ -213,10 +230,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               启动正测
             </button>
             <button
-              disabled={!canOperate}
+              disabled={!canControlForward}
               onClick={onSkipForward}
               className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs transition-all shadow-md ${
-                canOperate
+                canControlForward
                   ? 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-700 text-slate-900 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                   : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed'
               }`}
@@ -224,10 +241,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               跳过
             </button>
             <button
-              disabled={!canOperate}
+              disabled={!canControlForward}
               onClick={onStopForward}
               className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap shadow-md ${
-                canOperate
+                canControlForward
                   ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-500 border-red-400 dark:border-red-500/30 hover:bg-red-200 dark:hover:bg-red-600 hover:text-red-900 dark:hover:text-white hover:border-red-500 dark:hover:border-red-500'
                   : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border-slate-300 dark:border-slate-700 opacity-50 cursor-not-allowed'
               }`}
@@ -239,10 +256,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
           {/* Backward */}
           <div className="grid grid-cols-3 gap-2 shrink-0">
             <button
-              disabled={!canOperate}
+              disabled={!canStartReverse}
               onClick={onStartReverse}
               className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
-                canOperate
+                canStartReverse
                   ? 'bg-blue-600 hover:bg-blue-500 text-white border-blue-500 shadow-md hover:shadow-lg'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-300 border-slate-300 dark:border-slate-600 opacity-50 cursor-not-allowed'
               }`}
@@ -250,10 +267,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               启动回测
             </button>
             <button
-              disabled={!canOperate}
+              disabled={!canControlReverse}
               onClick={onSkipReverse}
               className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs transition-all shadow-md ${
-                canOperate
+                canControlReverse
                   ? 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-700 text-slate-900 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                   : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed'
               }`}
@@ -261,10 +278,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               跳过
             </button>
             <button
-              disabled={!canOperate}
+              disabled={!canControlReverse}
               onClick={onStopReverse}
               className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap shadow-md ${
-                canOperate
+                canControlReverse
                   ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-500 border-red-400 dark:border-red-500/30 hover:bg-red-200 dark:hover:bg-red-600 hover:text-red-900 dark:hover:text-white hover:border-red-500 dark:hover:border-red-500'
                   : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border-slate-300 dark:border-slate-700 opacity-50 cursor-not-allowed'
               }`}

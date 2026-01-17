@@ -237,7 +237,6 @@ function buildFrame(state, withSensorOk, extra) {
 function handleConnection(socket) {
   socket.setEncoding('ascii');
   const state = createInitialState();
-  let buffer = '';
   const timer = setInterval(() => {
     tickState(state);
     const withSensorOk = state.sensorFaultTicks === 0;
@@ -256,21 +255,16 @@ function handleConnection(socket) {
     socket.write(frame);
   }, 200);
   socket.on('data', chunk => {
-    buffer += chunk.toString('ascii');
-    const parts = buffer.split(/\r?\n/);
-    buffer = parts.pop();
-    parts.forEach(line => {
-      const trimmed = line.trim();
-      if (!trimmed) return;
-      const parsed = parseCommand(trimmed);
-      if (!parsed) return;
-      if (parsed.kind === 'heartbeat') {
-        const frame = buildFrame(state, true, null);
-        socket.write(frame);
-      } else if (parsed.kind === 'control') {
-        updateTargets(state, parsed);
-      }
-    });
+    const trimmed = chunk.toString('ascii').trim();
+    if (!trimmed) return;
+    const parsed = parseCommand(trimmed);
+    if (!parsed) return;
+    if (parsed.kind === 'heartbeat') {
+      const frame = buildFrame(state, true, null);
+      socket.write(frame);
+    } else if (parsed.kind === 'control') {
+      updateTargets(state, parsed);
+    }
   });
   socket.on('close', () => {
     clearInterval(timer);

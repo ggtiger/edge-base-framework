@@ -52,6 +52,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
     setpoints: flow.setpoints,
     measurements: flow.measurements,
     statusrc: flow.statusrc,
+     stepStatus: flow.stepStatus,
   });
 
   useEffect(() => {
@@ -63,8 +64,9 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
       setpoints: flow.setpoints,
       measurements: flow.measurements,
       statusrc: flow.statusrc,
+      stepStatus: flow.stepStatus,
     };
-  }, [flow.mode, flow.step, flow.paramsLocked, wheels.selectedWheels, flow.setpoints, flow.measurements, flow.statusrc]);
+  }, [flow.mode, flow.step, flow.paramsLocked, wheels.selectedWheels, flow.setpoints, flow.measurements, flow.statusrc, flow.stepStatus]);
 
   useEffect(() => {
     inboundHandlerRef.current = (data: string) => {
@@ -76,7 +78,8 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
         snapshot.step >= 1 &&
         snapshot.step <= 6 &&
         snapshot.paramsLocked &&
-        Object.values(snapshot.selectedWheels).some(Boolean);
+        Object.values(snapshot.selectedWheels).some(Boolean) &&
+        snapshot.stepStatus?.[snapshot.step - 1] === 'running';
 
       if (!canCheckDone) return;
 
@@ -98,13 +101,14 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
 
       if ((okByNumber || okByText) && statusrc === 0) {
         flow.setSendEnabled(false);
+        flow.markCurrentStepDone();
       }
     };
 
     return () => {
       inboundHandlerRef.current = null;
     };
-  }, [flow.handleInboundData, flow.setSendEnabled]);
+  }, [flow.handleInboundData, flow.setSendEnabled, flow.markCurrentStepDone]);
 
   // 时钟更新
   useEffect(() => {
@@ -404,6 +408,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
           onChangeSetpoints={flow.setSetpoints}
           step={flow.step}
           stepStatus={flow.stepStatus}
+          activeDirection={flow.activeDirection}
           paramsLocked={flow.paramsLocked}
           kingpin={flow.kingpin}
           onChangeKingpin={flow.setKingpin}

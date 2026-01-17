@@ -42,12 +42,23 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
   ];
 
   const formatAngle = (v: string) => {
+    if(mode === 'WQ'||!mode){
+        return '--.--°';
+    }
     const n = Number(v);
     if (Number.isFinite(n)) return `${n.toFixed(2)}°`;
     if (!v.trim()) return '--.--°';
     return `${v.trim()}°`;
   };
-
+  const wformatAngle = (v: string) => {
+      if(mode === 'QS'||!mode){
+        return '--.--°';
+      }
+      const n = Number(v);
+      if (Number.isFinite(n)) return `${n.toFixed(2)}°`;
+      if (!v.trim()) return '--.--°';
+      return `${v.trim()}°`;
+    };
   const frontLeft = mode === 'QS' ? measurements.qzq : mode === 'WQ' ? measurements.wzq : '';
   const frontRight = mode === 'QS' ? measurements.qyq : mode === 'WQ' ? measurements.wyq : '';
   const rearLeft = mode === 'QS' ? measurements.qzh : mode === 'WQ' ? measurements.wzh : '';
@@ -62,7 +73,7 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
   const activeTheme = "bg-indigo-100 dark:bg-indigo-500/20 border-2 border-indigo-500 dark:border-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.4)]";
 
   // 根据模式动态计算样式
-  const wheelBoxStyle = `${commonBoxStyle}${baseBoxStyle} ${mode === 'WQ' ? activeTheme : cyanTheme} w-6 md:w-8 h-24 md:h-20`;
+  const wheelBoxStyle = `${commonBoxStyle}${baseBoxStyle} ${mode === 'WQ' ? activeTheme : cyanTheme} w-6 md:w-8 h-24 md:h-20 flex items-center justify-center text-cyan-700 dark:text-cyan-400 text-center text-xs font-display [writing-mode:vertical-rl]`;
   const numberBoxStyle = `${commonBoxStyle} ${baseBoxStyle} ${mode === 'QS' ? activeTheme : cyanTheme} text-cyan-700 dark:text-cyan-400 text-center font-display text-xs py-1.5 px-3 min-w-[80px] tracking-wider pointer-events-auto`;
   // const numberBoxStyle = `${baseBoxStyle} ${mode === 'QS' ? activeTheme : cyanTheme} w-24 md:w-20 h-8 md:h-8 text-center text-xs md:text-sm font-bold text-slate-900 dark:text-white`;
   return (
@@ -119,12 +130,20 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
 
              {/* Wheel Indicators (Visual boxes near wheels) */}
             <div className="absolute inset-y-0 left-[calc(16%_-_10px)] md:left-[calc(22%_-_10px)] flex flex-col justify-between py-[15%] md:py-[10%] pointer-events-none">
-                <div className={wheelBoxStyle}></div>
-                <div className={wheelBoxStyle}></div>
+                <div className={wheelBoxStyle}>
+                   {wformatAngle(frontLeft)}
+                </div>
+                <div className={wheelBoxStyle}>
+                   {wformatAngle(frontRight)}
+                </div>
             </div>
             <div className="absolute inset-y-0 right-[calc(16%_-_10px)] md:right-[calc(22%_-_10px)] flex flex-col justify-between py-[15%] md:py-[10%] pointer-events-none">
-                <div className={wheelBoxStyle}></div>
-                <div className={wheelBoxStyle}></div>
+                <div className={wheelBoxStyle}>
+                  {wformatAngle(rearLeft)}
+                </div>
+                <div className={wheelBoxStyle}>
+                  {wformatAngle(rearRight)}
+                </div>
             </div>
 
             {/* Rear */}

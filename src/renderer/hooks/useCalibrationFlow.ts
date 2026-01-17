@@ -35,6 +35,7 @@ export function useCalibrationFlow(
   const [stepStatus, setStepStatus] = useState<StepStatus[]>(Array(6).fill('idle'));
   const [pls, setPls] = useState('');
   const [sendEnabled, setSendEnabled] = useState(false);
+  const [activeDirection, setActiveDirection] = useState<'forward' | 'reverse' | null>(null);
 
   // 处理入站数据的方法
   const handleInboundData = useCallback((data: string) => {
@@ -55,6 +56,7 @@ export function useCalibrationFlow(
     setStepStatus(Array(6).fill('idle'));
     setPls('');
     setSetpoints(Array(6).fill(''));
+    setActiveDirection(null);
   }, []);
 
   const setAndToggleParamsLock = useCallback(() => {
@@ -77,15 +79,28 @@ export function useCalibrationFlow(
       if (!paramsLocked) return;
       if (!Object.values(selectedWheels).some(Boolean)) return;
 
+      setActiveDirection(direction);
       setStep(prev => {
-        const next =
-          direction === 'forward'
-            ? prev === 0
-              ? 1
-              : Math.min(prev + 1, 6)
-            : prev <= 1
-              ? 1
-              : prev - 1;
+        let next = prev;
+        const currentStatus = prev >= 1 && prev <= 6 ? stepStatus[prev - 1] : 'idle';
+
+        if (direction === 'forward') {
+          if (prev === 0) {
+            next = 1;
+          } else if (currentStatus === 'done') {
+            next = Math.min(prev + 1, 6);
+          } else {
+            next = prev;
+          }
+        } else {
+          if (prev <= 1) {
+            next = 1;
+          } else if (currentStatus === 'done') {
+            next = prev - 1;
+          } else {
+            next = prev;
+          }
+        }
 
         const sp = normalizeAngleText(setpoints[next - 1] ?? '');
         const nextPls = `${mode}:Angle${sp}`;
@@ -101,26 +116,28 @@ export function useCalibrationFlow(
         return next;
       });
     },
-    [isTcpConnected, mode, paramsLocked, setpoints]
+    [isTcpConnected, mode, paramsLocked, setpoints, stepStatus]
   );
 
   const skipStep = useCallback(
     (direction: 'forward' | 'reverse') => {
       if (!paramsLocked) return;
       setStep(prev => {
-        const next =
-          direction === 'forward'
-            ? prev === 0
-              ? 1
-              : Math.min(prev + 1, 6)
-            : prev <= 1
-              ? 1
-              : prev - 1;
+        if (prev === 0) return prev;
+
+        let next = prev;
+        if (direction === 'forward') {
+          if (prev < 6) next = prev + 1;
+        } else {
+          if (prev > 1) next = prev - 1;
+        }
 
         setStepStatus(prevStatus => {
           const copy = [...prevStatus];
           if (prev >= 1 && prev <= 6) copy[prev - 1] = 'done';
-          copy[next - 1] = 'idle';
+          if (next !== prev) {
+            copy[next - 1] = 'idle';
+          }
           return copy;
         });
 
@@ -136,6 +153,15 @@ export function useCalibrationFlow(
       if (step < 1 || step > 6) return prevStatus;
       const copy = [...prevStatus];
       if (copy[step - 1] === 'running') copy[step - 1] = 'idle';
+      return copy;
+    });
+  }, [step]);
+
+  const markCurrentStepDone = useCallback(() => {
+    setStepStatus(prevStatus => {
+      if (step < 1 || step > 6) return prevStatus;
+      const copy = [...prevStatus];
+      copy[step - 1] = 'done';
       return copy;
     });
   }, [step]);
@@ -203,6 +229,7 @@ export function useCalibrationFlow(
     pls,
     sendEnabled,
     setSendEnabled,
+    activeDirection,
     resetFlow,
     setAndToggleParamsLock,
     startStep,
@@ -211,6 +238,7 @@ export function useCalibrationFlow(
     handleAction,
     startManualToe,
     startManualCamber,
-    handleInboundData, // 导出数据处理方法
+    handleInboundData,
+    markCurrentStepDone,
   };
 }
