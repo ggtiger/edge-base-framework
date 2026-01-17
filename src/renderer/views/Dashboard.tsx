@@ -11,6 +11,8 @@ interface SystemInfo {
 
 interface DashboardProps {
   onOpenCalibration: () => void;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onOpenCalibration }) => {

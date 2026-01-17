@@ -10,6 +10,8 @@ import help4 from '../assets/help/ScreenShot_4.png';
 
 interface CalibrationProps {
   onBack: () => void;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
 }
 
 type Mode = 'QS' | 'WQ' | null;
@@ -32,7 +34,7 @@ const DEFAULT_HOST = '';
 const DEFAULT_PORT = 0;
 const MAX_RETRIES = 10;
 
-const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
+const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme }) => {
   const [time, setTime] = useState<string>('');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -400,9 +402,6 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
   };
 
   useEffect(() => {
-    // Force dark mode
-    document.documentElement.classList.add('dark');
-    
     // Clock update logic
     const updateTime = () => {
       const now = new Date();
@@ -614,7 +613,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
   }, [showHelpModal, helpSlides.length]);
 
   return (
-    <div className="h-screen w-screen flex flex-col font-sans bg-background-dark text-slate-200 overflow-hidden relative">
+    <div className="h-screen w-screen flex flex-col font-sans bg-background-light text-slate-900 dark:bg-background-dark dark:text-slate-200 overflow-hidden relative">
       {showConnectionModal && (
         <ConnectionModal
           initialIp={connectionSettings.ip}
@@ -632,25 +631,25 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
           onClick={() => setShowHelpModal(false)}
         >
           <div
-            className="w-full max-w-5xl rounded-2xl bg-slate-900/80 border border-white/10 shadow-2xl overflow-hidden"
+            className="w-full max-w-5xl rounded-2xl bg-white/90 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-white/10">
               <div className="flex items-center gap-3 min-w-0">
                 <span className="material-icons text-blue-400">help</span>
                 <div
                   className="min-w-0"
                   style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif' }}
                 >
-                  <div className="text-sm font-bold text-white truncate">{helpSlides[helpIndex]?.title ?? '帮助'}</div>
-                  <div className="text-[11px] text-slate-400">{`${helpIndex + 1} / ${helpSlides.length}`}</div>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white truncate">{helpSlides[helpIndex]?.title ?? '帮助'}</div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400">{`${helpIndex + 1} / ${helpSlides.length}`}</div>
                 </div>
               </div>
               <button
                 onClick={() => setShowHelpModal(false)}
-                className="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 transition flex items-center justify-center border border-slate-700"
+                className="w-9 h-9 rounded-lg bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 transition flex items-center justify-center border border-slate-200 dark:border-slate-700"
               >
-                <span className="material-icons text-sm">close</span>
+                <span className="material-icons text-sm text-slate-700 dark:text-slate-200">close</span>
               </button>
             </div>
 
@@ -665,21 +664,21 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between px-5 py-4 border-t border-white/10">
+            <div className="flex items-center justify-between px-5 py-4 border-t border-slate-200 dark:border-white/10">
               <button
                 onClick={() => setHelpIndex(prev => Math.max(0, prev - 1))}
                 disabled={helpIndex <= 0}
                 className={`px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm font-medium border ${
                   helpIndex <= 0
-                    ? 'bg-slate-800/50 text-slate-500 border-slate-800 cursor-not-allowed'
-                    : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
+                    ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed dark:bg-slate-800/50 dark:text-slate-500 dark:border-slate-800'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700'
                 }`}
               >
                 <span className="material-icons text-sm">chevron_left</span>
                 上一页
               </button>
 
-              <div className="text-xs text-slate-400 flex items-center gap-2">
+              <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
                 <span className="material-icons text-sm">keyboard</span>
                 ESC 关闭 · ←/→ 翻页
               </div>
@@ -689,8 +688,8 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
                 disabled={helpIndex >= helpSlides.length - 1}
                 className={`px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm font-medium border ${
                   helpIndex >= helpSlides.length - 1
-                    ? 'bg-slate-800/50 text-slate-500 border-slate-800 cursor-not-allowed'
-                    : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
+                    ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed dark:bg-slate-800/50 dark:text-slate-500 dark:border-slate-800'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700'
                 }`}
               >
                 下一页
@@ -702,13 +701,13 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
       )}
       
       {/* Header */}
-      <header className="h-14 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md px-6 flex justify-between items-center shrink-0 z-50 shadow-sm">
+      <header className="h-14 border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 backdrop-blur-md px-6 flex justify-between items-center shrink-0 z-50 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded flex items-center justify-center shadow-lg shadow-blue-500/20">
              <span className="material-icons text-white text-xl">precision_manufacturing</span>
           </div>
           <div>
-            <h1 className="text-xl font-display font-bold tracking-wider text-white leading-none">
+            <h1 className="text-xl font-display font-bold tracking-wider text-slate-900 dark:text-white leading-none">
               Four Wheel Alignment <span className="text-primary text-sm align-top ml-1">V2.0</span>
             </h1>
             <p className="text-[10px] text-slate-500 font-display tracking-[0.2em] mt-1">Calibration System</p>
@@ -734,18 +733,25 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
             className={`px-4 py-2 rounded transition flex items-center gap-2 text-sm font-medium border ${
               testRunning
                 ? 'bg-accent-red/10 text-accent-red border-accent-red/20 hover:bg-accent-red hover:text-white'
-                : 'bg-blue-600/10 text-blue-300 border-blue-500/20 hover:bg-blue-600 hover:text-white'
+                : 'bg-blue-600/10 text-blue-700 dark:text-blue-300 border-blue-500/20 hover:bg-blue-600 hover:text-white'
             }`}
           >
             <span className={`material-icons text-sm ${testRunning ? (trafficPulse ? 'animate-pulse' : '') : ''}`}>{testRunning ? 'stop' : 'play_arrow'}</span>
             {testRunning ? '停止测试' : '启动测试'}
           </button>
           <button
+            onClick={onToggleTheme}
+            className="px-4 py-2 bg-white text-slate-700 rounded hover:bg-slate-50 transition flex items-center gap-2 text-sm font-medium border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-transparent dark:hover:bg-slate-700 dark:hover:border-slate-600"
+          >
+            <span className="material-icons text-sm">{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
+            {theme === 'dark' ? '白天' : '夜间'}
+          </button>
+          <button
             onClick={() => {
               setHelpIndex(0);
               setShowHelpModal(true);
             }}
-            className="px-4 py-2 bg-slate-800 text-slate-300 rounded hover:bg-slate-700 transition flex items-center gap-2 text-sm font-medium border border-transparent hover:border-slate-600"
+            className="px-4 py-2 bg-white text-slate-700 rounded hover:bg-slate-50 transition flex items-center gap-2 text-sm font-medium border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-transparent dark:hover:bg-slate-700 dark:hover:border-slate-600"
           >
             <span className="material-icons text-sm">help_outline</span> 帮助
           </button>
@@ -845,14 +851,14 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
       </main>
 
       {/* Footer */}
-      <footer className="h-10 shrink-0 bg-slate-900 border-t border-slate-800 px-4 flex items-center justify-between z-50 text-xs font-medium text-slate-500 overflow-hidden">
+      <footer className="h-10 shrink-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between z-50 text-xs font-medium text-slate-600 dark:text-slate-500 overflow-hidden">
         <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-2 px-2 py-1 rounded bg-slate-800 border border-slate-700 shrink-0">
+          <div className="flex items-center gap-2 px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shrink-0">
              <div className={`w-1.5 h-1.5 rounded-full ${linkStable ? 'bg-accent-green animate-pulse' : 'bg-accent-red'}`}></div>
              <span className="font-bold tracking-wide text-[10px] sm:text-xs whitespace-nowrap">{linkStable ? 'LINK: OK' : 'LINK: LOST'}</span>
           </div>
           <span
-            className="text-slate-200 border-l border-slate-700 pl-3 whitespace-nowrap"
+            className="text-slate-900 dark:text-slate-200 border-l border-slate-200 dark:border-slate-700 pl-3 whitespace-nowrap"
             style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Arial, sans-serif' }}
           >
             {statusText}
@@ -864,7 +870,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack }) => {
              <span className="material-icons text-[10px]">my_location</span>
              <span>IP：{displayedIp}:{connectionSettings.port}</span>
           </div>
-          <div className="text-slate-500 w-32 sm:w-48 text-right truncate">
+          <div className="text-slate-600 dark:text-slate-500 w-32 sm:w-48 text-right truncate">
             {time || 'INITIALIZING...'}
           </div>
         </div>

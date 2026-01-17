@@ -46,20 +46,20 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                     <div className="w-1 h-3 bg-blue-500 rounded-sm shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
-                    <span className="text-[10px] font-bold tracking-widest text-slate-400">状态监控 / STATUS MONITOR</span>
+                    <span className="text-[10px] font-bold tracking-widest text-slate-600 dark:text-slate-400">状态监控 / STATUS MONITOR</span>
                 </div>
                 <div className="flex gap-1">
-                    <span className="w-1 h-1 rounded-full bg-slate-600"></span>
-                    <span className="w-1 h-1 rounded-full bg-slate-600 opacity-50"></span>
-                    <span className="w-1 h-1 rounded-full bg-slate-600 opacity-25"></span>
+                    <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600"></span>
+                    <span className="w-1 h-1 rounded-full bg-slate-400/60 dark:bg-slate-600 opacity-50"></span>
+                    <span className="w-1 h-1 rounded-full bg-slate-400/40 dark:bg-slate-600 opacity-25"></span>
                 </div>
             </div>
 
             {/* Status Grid */}
             <div className="grid grid-cols-2 gap-3">
                 {/* System Status */}
-                <div className="bg-slate-900/40 rounded-lg p-3 border border-white/5 flex flex-col justify-between gap-2 group hover:border-blue-500/20 transition-colors">
-                    <span className="text-[10px] text-slate-500 uppercase tracking-wider">System</span>
+                <div className="bg-white/70 dark:bg-slate-900/40 rounded-lg p-3 border border-slate-200 dark:border-white/5 flex flex-col justify-between gap-2 group hover:border-blue-500/40 dark:hover:border-blue-500/20 transition-colors">
+                    <span className="text-[10px] text-slate-600 dark:text-slate-500 uppercase tracking-wider">System</span>
                     <div className="flex items-center gap-2">
                          <span className="relative flex h-2 w-2">
                             {systemOnline ? (
@@ -71,18 +71,20 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                             )}
                         </span>
-                        <span className={`text-xs font-bold font-display ${systemOnline ? 'text-emerald-400' : 'text-red-400'}`}>
+                        <span
+                          className={`text-xs font-bold font-display ${systemOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}
+                        >
                           {systemOnline ? 'ONLINE' : 'OFFLINE'}
                         </span>
                     </div>
                 </div>
 
                 {/* Link Status */}
-                <div className="bg-slate-900/40 rounded-lg p-3 border border-white/5 flex flex-col justify-between gap-2 group hover:border-blue-500/20 transition-colors">
-                    <span className="text-[10px] text-slate-500 uppercase tracking-wider">Link</span>
+                <div className="bg-white/70 dark:bg-slate-900/40 rounded-lg p-3 border border-slate-200 dark:border-white/5 flex flex-col justify-between gap-2 group hover:border-blue-500/40 dark:hover:border-blue-500/20 transition-colors">
+                    <span className="text-[10px] text-slate-600 dark:text-slate-500 uppercase tracking-wider">Link</span>
                     <div className="flex items-center gap-2">
-                        <span className={`material-icons text-[10px] ${linkStable ? 'text-blue-500' : 'text-slate-600'}`}>sensors</span>
-                        <span className={`text-xs font-bold font-display ${linkStable ? 'text-blue-400' : 'text-slate-500'}`}>
+                        <span className={`material-icons text-[10px] ${linkStable ? 'text-blue-600 dark:text-blue-500' : 'text-slate-500 dark:text-slate-600'}`}>sensors</span>
+                        <span className={`text-xs font-bold font-display ${linkStable ? 'text-blue-700 dark:text-blue-400' : 'text-slate-600 dark:text-slate-500'}`}>
                           {linkStable ? 'ACTIVE' : 'IDLE'}
                         </span>
                     </div>
@@ -90,12 +92,12 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             </div>
 
             {/* Action Button - More integrated */}
-             <button className="w-full relative group overflow-hidden rounded-lg bg-slate-800 border border-slate-700 hover:border-red-500/50 transition-all duration-300">
+             <button className="w-full relative group overflow-hidden rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-red-600/70 dark:hover:border-red-500/50 transition-all duration-300">
                 <div className={`absolute inset-0 bg-gradient-to-r ${sensorOk ? 'from-emerald-600/80 to-emerald-500/80' : 'from-red-600/80 to-red-500/80'} translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out`}></div>
                 <div className="flex items-center justify-center gap-2 py-2 relative z-10">
-                    <span className="text-[10px] font-bold tracking-[0.15em] text-slate-400 group-hover:text-white transition-colors">{`SENSOR: ${sensorText}`}</span>
-                    <div className="w-5 h-5 rounded bg-black/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                        <span className={`material-icons text-xs ${sensorOk ? 'text-emerald-500' : 'text-red-500'} group-hover:text-white transition-colors ${trafficPulse ? 'animate-pulse' : ''}`}>sensors</span>
+                    <span className="text-[10px] font-bold tracking-[0.15em] text-slate-700 dark:text-slate-400 group-hover:text-white transition-colors">{`SENSOR: ${sensorText}`}</span>
+                    <div className="w-5 h-5 rounded bg-slate-200/60 dark:bg-black/20 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                        <span className={`material-icons text-xs ${sensorOk ? 'text-emerald-600 dark:text-emerald-500' : 'text-red-600 dark:text-red-500'} group-hover:text-white transition-colors ${trafficPulse ? 'animate-pulse' : ''}`}>sensors</span>
                     </div>
                 </div>
             </button>
@@ -112,7 +114,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             <div className="flex items-center justify-between mb-4 shrink-0">
                <div className="flex items-center gap-2">
                    <div className="w-1 h-3 bg-indigo-500 rounded-sm shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div>
-                   <span className="text-[10px] font-bold tracking-widest text-slate-400">对齐逻辑 / ALIGNMENT LOGIC</span>
+                   <span className="text-[10px] font-bold tracking-widest text-slate-600 dark:text-slate-400">对齐逻辑 / ALIGNMENT LOGIC</span>
                </div>
            </div>
 
@@ -123,8 +125,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                  onClick={() => onSelectMode('QS')}
                  className={`relative group overflow-hidden h-10 rounded-lg border transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${
                    mode === 'QS'
-                     ? 'bg-indigo-600/10 border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.1)]'
-                     : 'bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50'
+                     ? 'bg-indigo-600/10 border-indigo-500/60 dark:border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.1)]'
+                     : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50 hover:border-indigo-500/60'
                  }`}
                >
                  {mode === 'QS' ? (
@@ -133,8 +135,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                    <div className="absolute inset-0 bg-indigo-500/10 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
                  )}
                  <div className="relative flex items-center justify-center gap-2 h-full">
-                   <span className={`material-icons text-xs transition-colors ${mode === 'QS' ? 'text-indigo-400' : 'text-slate-500 group-hover:text-indigo-400'}`}>straighten</span>
-                   <span className={`text-[10px] font-bold transition-colors tracking-wider ${mode === 'QS' ? 'text-indigo-300' : 'text-slate-400 group-hover:text-indigo-300'}`}>前束 / TOE</span>
+                   <span className={`material-icons text-xs transition-colors ${mode === 'QS' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}`}>straighten</span>
+                   <span className={`text-[10px] font-bold transition-colors tracking-wider ${mode === 'QS' ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300'}`}>前束 / TOE</span>
                  </div>
                </button>
                <button
@@ -142,8 +144,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                  onClick={() => onSelectMode('WQ')}
                  className={`relative group overflow-hidden h-10 rounded-lg border transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${
                    mode === 'WQ'
-                     ? 'bg-indigo-600/10 border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.1)]'
-                     : 'bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50'
+                     ? 'bg-indigo-600/10 border-indigo-500/60 dark:border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.1)]'
+                     : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50 hover:border-indigo-500/60'
                  }`}
                >
                  {mode === 'WQ' ? (
@@ -152,8 +154,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                    <div className="absolute inset-0 bg-indigo-500/10 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
                  )}
                  <div className="relative flex items-center justify-center gap-2 h-full">
-                   <span className={`material-icons text-xs transition-colors ${mode === 'WQ' ? 'text-indigo-400' : 'text-slate-500 group-hover:text-indigo-400'}`}>settings_overscan</span>
-                   <span className={`text-[10px] font-bold transition-colors tracking-wider ${mode === 'WQ' ? 'text-indigo-300' : 'text-slate-400 group-hover:text-indigo-300'}`}>外倾 / CAM</span>
+                   <span className={`material-icons text-xs transition-colors ${mode === 'WQ' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}`}>settings_overscan</span>
+                   <span className={`text-[10px] font-bold transition-colors tracking-wider ${mode === 'WQ' ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300'}`}>外倾 / CAM</span>
                  </div>
                </button>
            </div>

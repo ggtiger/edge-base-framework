@@ -57,7 +57,7 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
     <div className="col-span-6 flex flex-col h-full min-h-0">
       <GlassPanel className="flex flex-col h-full overflow-hidden relative border border-white/5">
         {/* Top Wheel Selectors */}
-        <div className="grid grid-cols-4 gap-2 p-4 bg-white/5 dark:bg-slate-900/30 border-b border-white/10 backdrop-blur-sm z-20 flex-shrink-0">
+        <div className="grid grid-cols-4 gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border-b border-slate-200 dark:border-white/10 backdrop-blur-sm z-20 flex-shrink-0">
           {wheels.map((wheel) => (
             <button
               key={wheel.id}
@@ -65,7 +65,7 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
               className={`btn-futuristic py-2 rounded text-xs font-bold tracking-wide transition-all
                 ${activeWheel === wheel.id 
                   ? 'bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)] border-blue-400/50' 
-                  : 'bg-slate-800/50 text-slate-400 border-slate-700/50 hover:bg-slate-800 hover:text-white hover:border-blue-500/50'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-slate-900 hover:border-blue-500/50 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700/50 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:border-blue-500/50'
                 }`}
             >
               {wheel.label}

@@ -4,6 +4,10 @@ import Dashboard from './views/Dashboard'
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'calibration' | 'dashboard'>('calibration')
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('fwacs-theme')
+    return saved === 'light' ? 'light' : 'dark'
+  })
 
   useEffect(() => {
     // Hide the loading indicator when React mounts
@@ -14,11 +18,18 @@ const App: React.FC = () => {
     }
   }, [])
 
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+    localStorage.setItem('fwacs-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'))
+
   if (currentView === 'calibration') {
-    return <Calibration onBack={() => setCurrentView('dashboard')} />
+    return <Calibration onBack={() => setCurrentView('dashboard')} theme={theme} onToggleTheme={toggleTheme} />
   }
 
-  return <Dashboard onOpenCalibration={() => setCurrentView('calibration')} />
+  return <Dashboard onOpenCalibration={() => setCurrentView('calibration')} theme={theme} onToggleTheme={toggleTheme} />
 }
 
 export default App

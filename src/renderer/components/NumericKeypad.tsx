@@ -58,27 +58,27 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-slate-900/60 backdrop-blur-sm animate-fade-in">
       <div className="relative">
         <GlassPanel className="w-80 p-6 shadow-[0_0_50px_rgba(59,130,246,0.2)] border-blue-500/30">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
              <div className="flex items-center gap-2">
                 <div className="w-1 h-3 bg-blue-500 rounded-sm shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
-                <span className="text-xs font-bold tracking-widest text-slate-300 uppercase">{title}</span>
+                <span className="text-xs font-bold tracking-widest text-slate-700 dark:text-slate-300 uppercase">{title}</span>
             </div>
             <button 
               onClick={onClose}
-              className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-slate-700/50 text-slate-400 hover:text-white transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-slate-200/70 dark:hover:bg-slate-700/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               <span className="material-icons text-sm">close</span>
             </button>
           </div>
 
           {/* Display */}
-          <div className="mb-6 bg-slate-900/80 border border-slate-700/50 rounded-lg p-4 text-right relative overflow-hidden group">
+          <div className="mb-6 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/50 rounded-lg p-4 text-right relative overflow-hidden group">
             <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"></div>
-            <span className="text-2xl font-display font-bold tracking-wider text-white relative z-10">
+            <span className="text-2xl font-display font-bold tracking-wider text-slate-900 dark:text-white relative z-10">
               {value || '0'}
               <span className="animate-pulse text-blue-500">_</span>
             </span>

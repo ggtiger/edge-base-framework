@@ -87,7 +87,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
       return `${base} border-emerald-500/60 shadow-[0_0_10px_rgba(16,185,129,0.15)]`;
     }
     if (status === 'running' || isCurrent) {
-      return `${base} border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.12)]`;
+      return `${base} border-red-600/80 dark:border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.18)]`;
     }
     return `${base} border-slate-300 dark:border-slate-700 hover:bg-slate-800`;
   };
