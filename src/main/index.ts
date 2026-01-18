@@ -290,6 +290,8 @@ async function createWindow() {
     width: width,
     height: height,
     center: true, // 居中显示
+    autoHideMenuBar: true,
+    frame: true,
     fullscreen: false,
     fullscreenable: true, // 允许全屏
     show: false,
