@@ -140,6 +140,8 @@ async function runBootVersionCheck() {
   const info = await getRendererUpdateInfo()
   const appVersion = app.getVersion()
   const rendererVersion = info.rendererVersion
+  const rawName = app.getName()
+  const appKey = typeof rawName === 'string' ? rawName.replace(/[^A-Za-z0-9_]/g, '_') : ''
 
   await setSplashProgress(5, `Checking version... (app ${appVersion}, ui ${rendererVersion})`)
 
@@ -148,6 +150,20 @@ async function runBootVersionCheck() {
   urlObj.searchParams.set('rendererVersion', rendererVersion)
   urlObj.searchParams.set('platform', process.platform)
   urlObj.searchParams.set('arch', process.arch)
+  if (appKey) {
+    urlObj.searchParams.set('appKey', appKey)
+  }
+
+  log.info('version check: request', {
+    url: urlObj.toString(),
+    envUrl,
+    fileUrl,
+    appVersion,
+    rendererVersion,
+    appKey,
+    platform: process.platform,
+    arch: process.arch,
+  })
 
   type CheckResponse =
     | { updateType: 'none' }
@@ -157,7 +173,14 @@ async function runBootVersionCheck() {
   let resp: CheckResponse | null = null
   try {
     const timeoutMs = Number.isFinite(cfg?.versionCheckTimeoutMs) ? Math.max(1000, Math.floor(cfg!.versionCheckTimeoutMs!)) : 6000
-    resp = (await fetchJson(urlObj.toString(), timeoutMs)) as CheckResponse
+    const rawResp = await fetchJson(urlObj.toString(), timeoutMs)
+    log.info('version check: raw response', rawResp)
+    const payload =
+      rawResp && typeof rawResp === 'object' && 'data' in (rawResp as any)
+        ? (rawResp as any).data
+        : rawResp
+    resp = payload as CheckResponse
+    log.info('version check: parsed payload', resp)
   } catch (e) {
     log.warn('version check failed', e)
     await setSplashProgress(10, 'Version check failed, continuing...')
@@ -165,26 +188,45 @@ async function runBootVersionCheck() {
   }
 
   if (!resp || resp.updateType === 'none') {
+    log.info('version check: no update', resp)
     await setSplashProgress(15, 'No updates, starting...')
     return
   }
 
   if (resp.updateType === 'installer') {
+    log.info('version check: installer update (renderer hot update not used)', resp)
     await setSplashProgress(15, 'Installer update available, starting...')
     return
   }
 
   const updateUrl = typeof resp.url === 'string' ? resp.url.trim() : ''
   if (!updateUrl) {
+    log.warn('version check: update response missing url', resp)
     await setSplashProgress(15, 'Update response invalid, starting...')
     return
   }
 
-  const remoteVersion = typeof resp.version === 'string' ? resp.version.trim() : ''
+  const remoteVersionRaw =
+    typeof (resp as any).rendererVersion === 'string'
+      ? (resp as any).rendererVersion
+      : typeof resp.version === 'string'
+        ? resp.version
+        : ''
+  const remoteVersion = remoteVersionRaw.trim()
   if (remoteVersion && compareSemver(remoteVersion, rendererVersion) <= 0) {
+    log.info('version check: UI already latest, skip hot update', {
+      remoteVersion,
+      rendererVersion,
+    })
     await setSplashProgress(15, `UI already latest (${rendererVersion}), starting...`)
     return
   }
+
+  log.info('version check: start hot update download', {
+    updateUrl,
+    remoteVersion,
+    rendererVersion,
+  })
 
   await setSplashProgress(20, `Downloading hot update${remoteVersion ? ` (${remoteVersion})` : ''}...`)
 
