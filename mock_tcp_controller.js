@@ -33,6 +33,10 @@ function createInitialState() {
     statusrc: 0,
     speedFactor: 0.2,
     sensorFaultTicks: 0,
+    linkDropTicks: 0,
+    heartbeatDelayTicks: 0,
+    pendingHeartbeat: null,
+    frameCounter: 0,
   };
 }
 
@@ -206,6 +210,8 @@ function buildFrame(state, withSensorOk, extra) {
   const parts = [];
   if (withSensorOk) {
     parts.push('SensorOK');
+  } else {
+    parts.push('SensorNG');
   }
   parts.push(
     'ST_status' +
@@ -239,7 +245,24 @@ function handleConnection(socket) {
   const state = createInitialState();
   const timer = setInterval(() => {
     tickState(state);
-    const withSensorOk = state.sensorFaultTicks === 0;
+    if (state.heartbeatDelayTicks > 0) {
+      state.heartbeatDelayTicks -= 1;
+      if (state.heartbeatDelayTicks === 0 && state.pendingHeartbeat && state.linkDropTicks === 0) {
+        socket.write(state.pendingHeartbeat);
+        state.pendingHeartbeat = null;
+      }
+    }
+    if (state.linkDropTicks > 0) {
+      state.linkDropTicks -= 1;
+      return;
+    }
+    if (Math.random() < 0.02) {
+      state.linkDropTicks = 15 + Math.floor(Math.random() * 25);
+      return;
+    }
+    state.frameCounter += 1;
+    const forceSensorError = state.frameCounter % 10 === 0;
+    const withSensorOk = !forceSensorError && state.sensorFaultTicks === 0;
     let extra = null;
     if (!state.moving && state.ackPending) {
       if (state.ackDelayTicks > 0) {
@@ -260,7 +283,13 @@ function handleConnection(socket) {
     const parsed = parseCommand(trimmed);
     if (!parsed) return;
     if (parsed.kind === 'heartbeat') {
+      if (state.linkDropTicks > 0) return;
       const frame = buildFrame(state, true, null);
+      if (Math.random() < 0.3) {
+        state.heartbeatDelayTicks = 5 + Math.floor(Math.random() * 15);
+        state.pendingHeartbeat = frame;
+        return;
+      }
       socket.write(frame);
     } else if (parsed.kind === 'control') {
       updateTargets(state, parsed);

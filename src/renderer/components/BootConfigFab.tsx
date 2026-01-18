@@ -117,9 +117,13 @@ export const BootConfigFab: React.FC = () => {
 
             <div className="px-5 py-4 space-y-4">
               {info && (
-                <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between gap-3">
-                  <div className="truncate">App {info.appVersion}</div>
-                  <div className="truncate">UI {info.rendererVersion}</div>
+                <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
+                  <div>
+                    应用版本：<span className="font-mono text-slate-800 dark:text-slate-100">{info.appVersion}</span>
+                  </div>
+                  <div>
+                    UI 版本：<span className="font-mono text-slate-800 dark:text-slate-100">{info.rendererVersion}</span>
+                  </div>
                 </div>
               )}
 
@@ -189,4 +193,3 @@ export const BootConfigFab: React.FC = () => {
     </>
   )
 }
-

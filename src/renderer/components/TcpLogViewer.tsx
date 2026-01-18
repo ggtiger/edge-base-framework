@@ -34,7 +34,7 @@ export const TcpLogViewer: React.FC<TcpLogViewerProps> = ({ logs }) => {
       </div>
       
       {/* Content - Popover */}
-      <div className="absolute bottom-full left-0 mb-2 w-[600px] max-w-[90vw] opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 translate-y-2 group-hover:translate-y-0 bg-slate-900/95 backdrop-blur border border-slate-700 rounded-lg shadow-2xl overflow-hidden z-[9999]">
+      <div className="absolute bottom-full left-0 mb-0 w-[600px] max-w-[90vw] opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 translate-y-2 group-hover:translate-y-0 bg-slate-900/95 backdrop-blur border border-slate-700 rounded-lg shadow-2xl overflow-hidden z-[9999]">
         <div className="h-8 flex items-center justify-between px-3 bg-slate-800/80 border-b border-slate-700/50">
              <span className="text-[10px] font-bold text-slate-400 font-sans">通信日志 (最新在前)</span>
              <div className="flex items-center gap-2 text-[9px] text-slate-500">

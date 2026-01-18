@@ -50,12 +50,18 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
   };
 
   const handleToggleSign = () => {
+    if (!value) {
+      setValue('-');
+      return;
+    }
     if (value.startsWith('-')) {
       setValue(prev => prev.slice(1));
-    } else if (value.length > 0) {
+    } else {
       setValue(prev => '-' + prev);
     }
   };
+
+  const displayValue = value;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-slate-900/60 backdrop-blur-sm animate-fade-in">
@@ -79,7 +85,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
           <div className="mb-6 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/50 rounded-lg p-4 text-right relative overflow-hidden group">
             <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"></div>
             <span className="text-2xl font-display font-bold tracking-wider text-slate-900 dark:text-white relative z-10">
-              {value || '0'}
+              {displayValue}
               <span className="animate-pulse text-blue-500">_</span>
             </span>
           </div>

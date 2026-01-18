@@ -161,11 +161,13 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
   const displayedIp = useMemo(() => tcp.connectionSettings.ip, [tcp.connectionSettings.ip]);
   const displayedLatency = useMemo(() => {
     if (!tcp.linkStable) return '--';
-    return '12ms';
-  }, [tcp.linkStable]);
+    if (tcp.latencyMs == null) return '--';
+    const value = Math.max(0, Math.min(9999, Math.round(tcp.latencyMs)));
+    return `${value}ms`;
+  }, [tcp.linkStable, tcp.latencyMs]);
 
   const statusText = useMemo(() => {
-    if (tcp.tcpStatus === 'Connected') return `已连接 - 延迟 ${displayedLatency}`;
+    if (tcp.tcpStatus === 'Connected') return `已连接 · 延迟 ${displayedLatency}`;
     if (tcp.showConnectionModal) return `连接失败（已重试 ${MAX_RETRIES} 次）`;
 
     const current = Number(tcp.retryCount);
@@ -180,6 +182,35 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
     if (tcp.tcpStatus.startsWith('TCP Error')) return '连接错误';
     return tcp.tcpStatus;
   }, [tcp.tcpStatus, tcp.retryCount, displayedLatency, tcp.showConnectionModal]);
+
+  const statusLevel = useMemo(() => {
+    if (tcp.tcpStatus === 'Connected' && tcp.linkStable) return 'ok';
+    if (tcp.tcpStatus === 'Connected' && !tcp.linkStable) return 'warn';
+    if (tcp.showConnectionModal) return 'error';
+    const current = Number(tcp.retryCount);
+    const max = Number(MAX_RETRIES);
+    if (current > 0 && current < max) return 'warn';
+    if (
+      tcp.tcpStatus === 'Disconnected' ||
+      tcp.tcpStatus === 'Closed'
+    ) {
+      return 'idle';
+    }
+    if (
+      tcp.tcpStatus.includes('Error') ||
+      tcp.tcpStatus.startsWith('TCP Error')
+    ) {
+      return 'error';
+    }
+    return 'idle';
+  }, [tcp.tcpStatus, tcp.retryCount, tcp.linkStable, tcp.showConnectionModal]);
+
+  const statusColorClass = useMemo(() => {
+    if (statusLevel === 'ok') return 'text-emerald-700 dark:text-emerald-300';
+    if (statusLevel === 'warn') return 'text-amber-700 dark:text-amber-300';
+    if (statusLevel === 'error') return 'text-red-700 dark:text-red-300';
+    return 'text-slate-700 dark:text-slate-200';
+  }, [statusLevel]);
 
   const helpSlides = useMemo(() => {
     return [
@@ -318,6 +349,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
             tcp.setConnectionSettings({ ip, port });
             tcp.startTest({ ip, port });
           }}
+          onClose={() => tcp.stopTest()}
         />
       )}
 
@@ -438,11 +470,13 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
 
           <div className="w-px h-full bg-slate-200 dark:bg-slate-700"></div>
 
-          <div
-            className="px-3 text-slate-900 dark:text-slate-200 whitespace-nowrap h-full flex items-center"
-            style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif' }}
-          >
-            {statusText}
+          <div className="px-2">
+            <div
+              className={`h-5 min-w-[90px] max-w-[150px] px-2 rounded-md flex items-center justify-start text-[11px] font-medium whitespace-nowrap transition-colors ${statusColorClass}`}
+              style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif' }}
+            >
+              {statusText}
+            </div>
           </div>
 
           <TcpLogViewer logs={tcp.tcpLogs} />

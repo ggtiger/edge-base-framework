@@ -134,12 +134,12 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
                    {wformatAngle(frontLeft)}
                 </div>
                 <div className={wheelBoxStyle}>
-                   {wformatAngle(frontRight)}
+                   {wformatAngle(rearLeft)}
                 </div>
             </div>
             <div className="absolute inset-y-0 right-[calc(16%_-_10px)] md:right-[calc(22%_-_10px)] flex flex-col justify-between py-[15%] md:py-[10%] pointer-events-none">
                 <div className={wheelBoxStyle}>
-                  {wformatAngle(rearLeft)}
+                  {wformatAngle(frontRight)}
                 </div>
                 <div className={wheelBoxStyle}>
                   {wformatAngle(rearRight)}

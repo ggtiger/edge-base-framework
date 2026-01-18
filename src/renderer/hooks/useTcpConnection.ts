@@ -17,10 +17,12 @@ export function useTcpConnection(onDataReceived?: (data: string) => void) {
   const [testRunning, setTestRunning] = useState(false);
   const [tcpStatus, setTcpStatus] = useState<string>('Disconnected');
   const [lastRxAt, setLastRxAt] = useState<number | null>(null);
+  const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [trafficPulse, setTrafficPulse] = useState(false);
   const [tcpLogs, setTcpLogs] = useState<TcpLog[]>([]);
 
   const trafficPulseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastRxAtRef = useRef<number | null>(null);
 
   const isTcpConnected = tcpStatus === 'Connected';
   const linkStable = isTcpConnected && lastRxAt !== null && Date.now() - lastRxAt < 2500;
@@ -72,7 +74,9 @@ export function useTcpConnection(onDataReceived?: (data: string) => void) {
     setRetryCount(0);
     setShowConnectionModal(false);
     setLastRxAt(null);
+    setLatencyMs(null);
     setTrafficPulse(false);
+    lastRxAtRef.current = null;
     if (trafficPulseTimerRef.current) {
       clearTimeout(trafficPulseTimerRef.current);
       trafficPulseTimerRef.current = null;
@@ -117,7 +121,16 @@ export function useTcpConnection(onDataReceived?: (data: string) => void) {
     });
 
     const removeDataListener = window.electronAPI.onTcpData((data) => {
-      setLastRxAt(Date.now());
+      const now = Date.now();
+      if (lastRxAtRef.current !== null) {
+        const diff = now - lastRxAtRef.current;
+        setLatencyMs(prev => {
+          if (prev === null) return diff;
+          return Math.round(prev * 0.7 + diff * 0.3);
+        });
+      }
+      lastRxAtRef.current = now;
+      setLastRxAt(now);
       setTrafficPulse(true);
       if (trafficPulseTimerRef.current) clearTimeout(trafficPulseTimerRef.current);
       trafficPulseTimerRef.current = setTimeout(() => {
@@ -206,6 +219,7 @@ export function useTcpConnection(onDataReceived?: (data: string) => void) {
     tcpStatus,
     isTcpConnected,
     linkStable,
+    latencyMs,
     trafficPulse,
     tcpLogs,
     startTest,
