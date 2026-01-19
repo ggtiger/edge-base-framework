@@ -123,7 +123,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
            </div>
 
            {/* Mode Selection Grid */}
-           <div className="grid grid-cols-2 gap-3 mb-6 shrink-0">
+           <div className="grid grid-cols-2 gap-3 mb-2 shrink-0 z-10">
                <button
                  disabled={disabled}
                  onClick={() => onSelectMode('QS')}
@@ -165,15 +165,23 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
            </div>
 
            {/* Car Visualization */}
-           <div className="flex-grow flex flex-col justify-center items-center relative perspective-[1000px]">
+           <div className="flex-grow flex flex-col justify-center items-center relative perspective-[1000px] -mt-2">
                
-               {/* Central Chassis/Body Hint */}
-               <div className="absolute inset-x-8 top-0 bottom-0 border-x border-slate-700/20 -z-10"></div>
-               <div className="absolute inset-y-8 left-0 right-0 border-y border-slate-700/20 -z-10"></div>
-               
+               {/* Decorative Background Elements */}
+               <div className="absolute inset-0 flex items-center justify-center -z-20">
+                  <div className="w-px h-full bg-gradient-to-b from-indigo-500/20 via-slate-500/5 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/5 to-transparent opacity-30"></div>
+               </div>
+
+               {/* Connection Line from Top */}
+               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-24 bg-gradient-to-b from-indigo-500/40 to-transparent -z-10"></div>
+
                {/* Car Outline (Abstract) */}
-               <div className="absolute w-32 h-48 border border-slate-700/30 rounded-3xl -z-10 flex items-center justify-center">
-                   <div className="w-full h-full bg-slate-800/5 backdrop-blur-[1px] rounded-3xl"></div>
+               <div className="absolute w-40 h-[280px] border border-slate-700/20 dark:border-slate-700/30 rounded-[2.5rem] -z-10 flex items-center justify-center">
+                   <div className="w-full h-full bg-slate-800/5 backdrop-blur-[1px] rounded-[2.5rem]"></div>
+                   {/* Internal chassis detail */}
+                   <div className="absolute inset-x-6 top-8 bottom-8 border-x border-dashed border-slate-500/10"></div>
+                   <div className="absolute inset-y-12 left-0 right-0 border-y border-dashed border-slate-500/10"></div>
                </div>
 
                {/* Wheels Container */}
