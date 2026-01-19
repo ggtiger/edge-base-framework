@@ -207,37 +207,32 @@ function tickState(state) {
 function buildFrame(state, withSensorOk, extra) {
   const m = state.measurements;
   const status = state.statusrc;
-  const parts = [];
-  if (withSensorOk) {
-    parts.push('SensorOK');
-  } else {
-    parts.push('SensorNG');
-  }
-  parts.push(
+  const prefix = ',0,0,0,0 </2;0;0;1;0;33;0;0;0;32000;0;0;/> _';
+  let frame =
+    prefix +
     'ST_status' +
-      String(status) +
-      'qzq' +
-      m.qzq.toFixed(2) +
-      'qyq' +
-      m.qyq.toFixed(2) +
-      'qzh' +
-      m.qzh.toFixed(2) +
-      'qyh' +
-      m.qyh.toFixed(2) +
-      'wzq' +
-      m.wzq.toFixed(2) +
-      'wyq' +
-      m.wyq.toFixed(2) +
-      'wzh' +
-      m.wzh.toFixed(2) +
-      'wyh' +
-      m.wyh.toFixed(2) +
-      'ND'
-  );
+    String(status) +
+    'qzq' +
+    m.qzq.toFixed(2) +
+    'qyq' +
+    m.qyq.toFixed(2) +
+    'qzh' +
+    m.qzh.toFixed(2) +
+    'qyh' +
+    m.qyh.toFixed(2) +
+    'wzq' +
+    m.wzq.toFixed(2) +
+    'wyq' +
+    m.wyq.toFixed(2) +
+    'wzh' +
+    m.wzh.toFixed(2) +
+    'wyh' +
+    m.wyh.toFixed(2) +
+    'ND';
   if (extra) {
-    parts.push(extra);
+    frame += extra;
   }
-  return parts.join('');
+  return frame;
 }
 
 function handleConnection(socket) {

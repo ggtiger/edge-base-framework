@@ -169,6 +169,10 @@ export function parseInboundData(raw: string): {
     measurements.wyh = str.slice(pos.wyh + 3, pos.pos10).trim();
   }
 
+  if (sensorOk === null && statusrc === 0 && hasAll) {
+    sensorOk = true;
+  }
+
   // ACK 检测
   isAck =
     str.includes('QSRECVOK') ||
