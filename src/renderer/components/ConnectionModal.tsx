@@ -38,7 +38,7 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({ initialIp, ini
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition flex items-center justify-center"
+            className="w-8 h-8 rounded-lg bg-white/40 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-300 dark:hover:border-slate-600 backdrop-blur-md transition-all flex items-center justify-center active:scale-95 shadow-sm"
           >
             <span className="material-icons text-sm text-slate-700 dark:text-slate-200">close</span>
           </button>
@@ -72,7 +72,7 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({ initialIp, ini
 
           <button
             type="submit"
-            className="mt-4 bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 px-4 rounded transition-all shadow-md hover:shadow-lg border border-blue-500 active:scale-95 flex items-center justify-center gap-2"
+            className="mt-4 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-medium py-2.5 px-4 rounded-lg transition-all shadow-lg hover:shadow-blue-500/30 border border-blue-600 ring-1 ring-inset ring-white/50 active:scale-95 flex items-center justify-center gap-2 backdrop-blur-md"
           >
             <span className="material-icons text-sm">refresh</span>
             重试连接

@@ -55,7 +55,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ slides, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-lg bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 transition flex items-center justify-center border border-slate-200 dark:border-slate-700"
+            className="w-9 h-9 rounded-lg bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 hover:from-slate-50 hover:to-slate-100 dark:hover:from-slate-700 dark:hover:to-slate-800 transition-all flex items-center justify-center border border-slate-400 dark:border-slate-700 shadow-sm active:scale-95 ring-1 ring-inset ring-white/80 dark:ring-white/20"
           >
             <span className="material-icons text-sm text-slate-700 dark:text-slate-200">close</span>
           </button>
@@ -76,10 +76,10 @@ export const HelpModal: React.FC<HelpModalProps> = ({ slides, onClose }) => {
           <button
             onClick={() => setIndex(prev => Math.max(0, prev - 1))}
             disabled={index <= 0}
-            className={`px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm font-medium border ${
+            className={`px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2 text-sm font-medium border shadow-sm active:scale-95 backdrop-blur-md ${
               index <= 0
-                ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed dark:bg-slate-800/50 dark:text-slate-500 dark:border-slate-800'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700'
+                ? 'bg-slate-100 text-slate-400 border-slate-300 cursor-not-allowed dark:bg-slate-800/50 dark:text-slate-500 dark:border-slate-800 opacity-50'
+                : 'bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 hover:from-slate-50 hover:to-slate-100 dark:hover:from-slate-700 dark:hover:to-slate-800 text-slate-700 dark:text-slate-200 border-slate-400 dark:border-slate-700 ring-1 ring-inset ring-white/80 dark:ring-white/10 hover:shadow-md'
             }`}
           >
             <span className="material-icons text-sm">chevron_left</span>
@@ -94,10 +94,10 @@ export const HelpModal: React.FC<HelpModalProps> = ({ slides, onClose }) => {
           <button
             onClick={() => setIndex(prev => Math.min(slides.length - 1, prev + 1))}
             disabled={index >= slides.length - 1}
-            className={`px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm font-medium border ${
+            className={`px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2 text-sm font-medium border shadow-sm active:scale-95 backdrop-blur-md ${
               index >= slides.length - 1
-                ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed dark:bg-slate-800/50 dark:text-slate-500 dark:border-slate-800'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700'
+                ? 'bg-slate-100 text-slate-400 border-slate-300 cursor-not-allowed dark:bg-slate-800/50 dark:text-slate-500 dark:border-slate-800 opacity-50'
+                : 'bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 hover:from-slate-50 hover:to-slate-100 dark:hover:from-slate-700 dark:hover:to-slate-800 text-slate-700 dark:text-slate-200 border-slate-400 dark:border-slate-700 ring-1 ring-inset ring-white/80 dark:ring-white/10 hover:shadow-md'
             }`}
           >
             下一页

@@ -81,16 +81,55 @@ html, body, #app {
 
 /* Glassmorphism Utilities */
 .glass-panel {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(15, 23, 42, 0.25);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 
+        0 10px 30px -5px rgba(0, 0, 0, 0.1), 
+        0 4px 6px -2px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
 }
 
 .dark .glass-panel {
-    background: rgba(30, 41, 59, 0.7);
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.8));
     border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 10px 30px -5px rgba(0, 0, 0, 0.5), 
+        0 4px 6px -2px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Tech Background Effect */
+.tech-background {
+    background-color: #f1f5f9;
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
+        linear-gradient(rgba(203, 213, 225, 0.4) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(203, 213, 225, 0.4) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
+    background-position: center top;
+}
+
+.dark .tech-background {
+    background-color: #0f172a;
+    background-image: 
+        radial-gradient(circle at 50% -20%, rgba(56, 189, 248, 0.15) 0%, transparent 70%),
+        radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 100% 0%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    background-position: center top;
+}
+
+/* Vignette removed */
+.tech-background::after {
+    display: none;
+}
+
+.dark .tech-background::after {
+    display: none;
 }
 
 /* Custom Button Effects */

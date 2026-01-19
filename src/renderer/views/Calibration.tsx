@@ -111,6 +111,17 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
   }, [flow.handleInboundData, flow.setSendEnabled, flow.markCurrentStepDone]);
 
   // 时钟更新
+  // 获取版本信息
+  const [versionInfo, setVersionInfo] = useState<{ app: string; ui: string } | null>(null);
+
+  useEffect(() => {
+    if (window.electronAPI) {
+      window.electronAPI.getRendererUpdateInfo().then(info => {
+        setVersionInfo({ app: info.appVersion, ui: info.rendererVersion });
+      }).catch(console.error);
+    }
+  }, []);
+
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -340,7 +351,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col font-sans bg-background-light text-slate-900 dark:bg-background-dark dark:text-slate-200 overflow-hidden relative">
+    <div className="h-screen w-screen flex flex-col font-sans tech-background text-slate-900 dark:text-slate-200 overflow-hidden relative">
       {tcp.showConnectionModal && (
         <ConnectionModal
           initialIp={tcp.connectionSettings.ip}
@@ -356,26 +367,36 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
       {showHelpModal && <HelpModal slides={helpSlides} onClose={() => setShowHelpModal(false)} />}
 
       {/* Header */}
-      <header className="h-14 border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 backdrop-blur-md px-6 flex justify-between items-center shrink-0 z-50 shadow-sm">
+      <header className="h-14 border-b border-white/60 dark:border-white/10 bg-gradient-to-r from-white/90 to-slate-50/90 dark:from-slate-900/90 dark:to-slate-800/90 backdrop-blur-xl px-6 flex justify-between items-center shrink-0 z-50 shadow-lg ring-1 ring-white/40 dark:ring-white/5 relative">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded flex items-center justify-center shadow-lg shadow-blue-500/20 ring-1 ring-white/20">
             <span className="material-icons text-white text-xl">precision_manufacturing</span>
           </div>
           <div>
             <h1 className="text-xl font-display font-bold tracking-wider text-slate-900 dark:text-white leading-none">
-              Four Wheel Alignment <span className="text-primary text-sm align-top ml-1">V2.0</span>
+              Four Wheel Alignment 
             </h1>
-            <p className="text-[10px] text-slate-500 font-display tracking-[0.2em] mt-1">Calibration System</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-[10px] text-slate-500 font-display tracking-[0.2em]">Calibration System</p>
+              {versionInfo && (
+                <>
+                  <span className="w-px h-2 bg-slate-300 dark:bg-slate-600"></span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    App v{versionInfo.app} / UI v{versionInfo.ui}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="flex gap-3">
           <button
             onClick={() => (tcp.testRunning ? tcp.stopTest() : tcp.startTest())}
-            className={`px-4 py-2 rounded transition flex items-center justify-center gap-2 text-sm font-medium border shadow-md ${
+            className={`px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm font-bold border shadow-lg backdrop-blur-md active:scale-95 ${
               tcp.testRunning
-                ? 'bg-red-50 text-red-700 border-red-300 hover:bg-red-600 hover:text-white hover:border-red-600 dark:bg-red-900/20 dark:text-red-400 dark:border-red-500/30'
-                : 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-500/30'
+                ? 'bg-gradient-to-b from-red-50 to-red-100 text-red-700 border-red-400 hover:from-red-100 hover:to-red-200 hover:shadow-red-500/30 ring-1 ring-inset ring-white/50 dark:from-red-900/40 dark:to-red-900/60 dark:text-red-300 dark:border-red-500 dark:ring-white/20'
+                : 'bg-gradient-to-b from-blue-50 to-blue-100 text-blue-700 border-blue-400 hover:from-blue-100 hover:to-blue-200 hover:shadow-blue-500/30 ring-1 ring-inset ring-white/50 dark:from-blue-900/40 dark:to-blue-900/60 dark:text-blue-300 dark:border-blue-500 dark:ring-white/20'
             }`}
           >
             <span className={`material-icons text-sm ${tcp.testRunning ? (tcp.trafficPulse ? 'animate-pulse' : '') : ''}`}>
@@ -385,20 +406,26 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
           </button>
           <button
             onClick={onToggleTheme}
-            className="px-4 py-2 bg-white text-slate-900 rounded hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium border border-slate-400 shadow-md dark:bg-slate-800 dark:text-slate-300 dark:border-transparent dark:hover:bg-slate-700 dark:hover:border-slate-600"
+            className={`px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium border shadow-lg backdrop-blur-md active:scale-95 ${
+              theme === 'dark'
+                ? 'bg-gradient-to-b from-slate-700 to-slate-800 border-slate-500 text-blue-100 hover:from-slate-600 hover:to-slate-700 hover:border-blue-500 hover:shadow-blue-500/40 ring-1 ring-inset ring-white/20'
+                : 'bg-gradient-to-b from-white to-slate-50 border-slate-400 text-slate-700 hover:from-white hover:to-amber-50 hover:border-amber-500 hover:text-amber-700 hover:shadow-amber-500/30 ring-1 ring-inset ring-white/80'
+            }`}
           >
-            <span className="material-icons text-sm">{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
-            {theme === 'dark' ? '白天' : '夜间'}
+            <span className={`material-icons text-sm transition-transform duration-500 ${theme === 'dark' ? 'rotate-180 text-blue-300' : 'rotate-0 text-amber-500'}`}>
+              {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+            </span>
+            {theme === 'dark' ? '亮色模式' : '暗色模式'}
           </button>
           <button
             onClick={() => setShowHelpModal(true)}
-            className="px-4 py-2 bg-white text-slate-900 rounded hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm font-medium border border-slate-400 shadow-sm dark:bg-slate-800 dark:text-slate-300 dark:border-transparent dark:hover:bg-slate-700 dark:hover:border-slate-600"
+            className="px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium border shadow-lg backdrop-blur-md active:scale-95 bg-gradient-to-b from-white to-slate-50 border-slate-400 text-slate-700 hover:from-white hover:to-slate-100 hover:border-slate-500 hover:shadow-slate-400/30 ring-1 ring-inset ring-white/80 dark:from-slate-800/60 dark:to-slate-800/80 dark:border-slate-500 dark:text-slate-300 dark:hover:from-slate-700/60 dark:hover:to-slate-700/80 dark:ring-white/20"
           >
             <span className="material-icons text-sm">help_outline</span> 帮助
           </button>
           <button
             onClick={() => void window.electronAPI?.quitApp?.()}
-            className="px-4 py-2 bg-accent-red/10 text-accent-red border border-accent-red/20 rounded hover:bg-accent-red hover:text-white transition flex items-center justify-center gap-2 text-sm font-medium group shadow-[0_0_10px_rgba(239,68,68,0)] hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+            className="px-4 py-2 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium border shadow-lg backdrop-blur-md active:scale-95 bg-gradient-to-b from-red-50/20 to-red-50/40 border-red-300 text-red-600 hover:from-red-500 hover:to-red-600 hover:text-white hover:border-red-600 hover:shadow-red-500/40 ring-1 ring-inset ring-white/50 dark:from-red-900/20 dark:to-red-900/40 dark:border-red-500 dark:text-red-400 dark:ring-white/20"
           >
             <span className="material-icons text-sm group-hover:rotate-90 transition-transform">power_settings_new</span> 关闭
           </button>

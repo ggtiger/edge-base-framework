@@ -75,7 +75,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
             </div>
             <button 
               onClick={onClose}
-              className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-slate-200/70 dark:hover:bg-slate-700/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded-full bg-white/40 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-700 border border-slate-400 dark:border-slate-600 backdrop-blur-md transition-all shadow-sm active:scale-95 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white ring-1 ring-inset ring-white/80 dark:ring-white/20"
             >
               <span className="material-icons text-sm">close</span>
             </button>
@@ -112,7 +112,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
             {/* Enter Button (Spans 2 rows vertically) */}
             <button 
                 onClick={() => onConfirm(value)}
-                className="row-span-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.3)] active:translate-y-0.5 transition-all flex items-center justify-center group"
+                className="row-span-2 rounded-lg bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white border border-blue-600 ring-1 ring-inset ring-white/50 shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] active:scale-95 transition-all flex items-center justify-center group backdrop-blur-md"
             >
                 <span className="material-icons group-hover:scale-110 transition-transform">keyboard_return</span>
             </button>
@@ -131,7 +131,7 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
 const KeyButton: React.FC<{ children: React.ReactNode; onClick: () => void }> = ({ children, onClick }) => (
   <button 
     onClick={onClick}
-    className="h-12 rounded-lg bg-white dark:bg-slate-800 border border-slate-400 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-blue-500 dark:hover:border-slate-500 text-slate-900 dark:text-slate-200 font-display font-bold text-lg active:scale-95 transition-all shadow-md hover:shadow-lg flex items-center justify-center"
+    className="h-12 rounded-lg bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-400 dark:border-slate-700 hover:from-blue-50 hover:to-blue-100 dark:hover:from-slate-700 dark:hover:to-slate-800 hover:border-blue-400 dark:hover:border-blue-500/50 ring-1 ring-inset ring-white/80 dark:ring-white/5 text-slate-900 dark:text-slate-200 font-display font-bold text-lg active:scale-95 transition-all shadow-md hover:shadow-lg flex items-center justify-center backdrop-blur-md"
   >
     {children}
   </button>
@@ -139,13 +139,13 @@ const KeyButton: React.FC<{ children: React.ReactNode; onClick: () => void }> = 
 
 const ActionButton: React.FC<{ onClick: () => void; icon?: string; label?: string; color: 'red' | 'orange' }> = ({ onClick, icon, label, color }) => {
     const colorClasses = color === 'red' 
-        ? 'bg-red-100 dark:bg-red-900/20 border-red-300 dark:border-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/40 shadow-sm' 
-        : 'bg-orange-100 dark:bg-orange-900/20 border-orange-300 dark:border-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/40 shadow-sm';
+        ? 'bg-gradient-to-b from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-900/30 border-red-400 dark:border-red-900/30 text-red-700 dark:text-red-400 hover:from-red-100 hover:to-red-200 dark:hover:from-red-900/30 dark:hover:to-red-900/40 shadow-sm' 
+        : 'bg-gradient-to-b from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-900/30 border-orange-400 dark:border-orange-900/30 text-orange-700 dark:text-orange-400 hover:from-orange-100 hover:to-orange-200 dark:hover:from-orange-900/30 dark:hover:to-orange-900/40 shadow-sm';
     
     return (
         <button 
             onClick={onClick}
-            className={`h-12 rounded-lg border ${colorClasses} font-bold active:scale-95 transition-all flex items-center justify-center shadow-md hover:shadow-lg`}
+            className={`h-12 rounded-lg border ${colorClasses} font-bold active:scale-95 transition-all flex items-center justify-center shadow-md hover:shadow-lg backdrop-blur-md ring-1 ring-inset ring-white/50`}
         >
             {icon ? <span className="material-icons text-sm">{icon}</span> : label}
         </button>

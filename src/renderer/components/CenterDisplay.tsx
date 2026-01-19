@@ -34,11 +34,11 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
   onAction,
 }) => {
 
-  const wheels: { id: WheelId; label: string }[] = [
-    { id: 'FL', label: '左前' },
-    { id: 'FR', label: '右前' },
-    { id: 'RL', label: '左后' },
-    { id: 'RR', label: '右后' },
+  const wheels: { id: WheelId; label: string; icon: string }[] = [
+    { id: 'FL', label: '左前', icon: 'north_west' },
+    { id: 'FR', label: '右前', icon: 'north_east' },
+    { id: 'RL', label: '左后', icon: 'south_west' },
+    { id: 'RR', label: '右后', icon: 'south_east' },
   ];
 
   const formatAngle = (v: string) => {
@@ -78,19 +78,20 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
   // const numberBoxStyle = `${baseBoxStyle} ${mode === 'QS' ? activeTheme : cyanTheme} w-24 md:w-20 h-8 md:h-8 text-center text-xs md:text-sm font-bold text-slate-900 dark:text-white`;
   return (
     <div className="col-span-6 flex flex-col h-full min-h-0">
-      <GlassPanel className="flex flex-col h-full overflow-hidden relative border border-slate-200 dark:border-white/5">
+      <GlassPanel className="flex flex-col h-full overflow-hidden relative border border-slate-200 dark:border-white/5 shadow-2xl">
         {/* Top Wheel Selectors */}
-        <div className="grid grid-cols-4 gap-2 p-4 bg-slate-50 dark:bg-slate-900/30 border-b border-slate-200 dark:border-white/10 backdrop-blur-sm z-20 flex-shrink-0">
+        <div className="grid grid-cols-4 gap-2 p-4 bg-white/40 dark:bg-slate-800/40 border-b border-white/20 dark:border-white/5 backdrop-blur-md z-20 flex-shrink-0 shadow-sm">
           {wheels.map((wheel) => (
             <button
               key={wheel.id}
               onClick={() => onSelectWheel(wheel.id)}
-              className={`flex items-center justify-center py-2 border rounded text-xs font-bold tracking-wide transition-all shadow-md
+              className={`flex items-center justify-center py-2 border rounded text-xs font-bold tracking-wide transition-all active:scale-95 backdrop-blur-md ring-1 ring-inset gap-2
                 ${activeWheel === wheel.id 
-                  ? 'bg-blue-600 text-white border-blue-500 shadow-blue-500/40' 
-                  : 'bg-white text-slate-900 border-slate-400 hover:bg-slate-50 hover:text-slate-900 hover:border-blue-500/50 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700/50 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:border-blue-500/50'
+                  ? 'bg-gradient-to-b from-blue-500 to-blue-600 text-white border-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.5)] ring-white/50' 
+                  : 'bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 text-slate-900 dark:text-slate-400 border-slate-400 dark:border-slate-600 shadow-lg ring-white/80 dark:ring-white/20 hover:shadow-blue-500/20 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-white'
                 }`}
             >
+              <span className="material-icons text-base">{wheel.icon}</span>
               {wheel.label}
             </button>
           ))}
@@ -160,23 +161,26 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
         </div>
 
         {/* Bottom Actions */}
-        <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50 dark:bg-slate-900/30 border-t border-slate-200 dark:border-white/10 backdrop-blur-sm z-20 flex-shrink-0">
+        <div className="grid grid-cols-3 gap-3 p-4 bg-white/40 dark:bg-slate-800/40 border-t border-white/20 dark:border-white/5 backdrop-blur-md z-20 flex-shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
           <button
             onClick={() => onAction('hm')}
-            className="flex items-center justify-center py-3 bg-white dark:bg-slate-800 border border-slate-400 dark:border-slate-700 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-500 dark:hover:border-slate-600 transition-all shadow-md hover:shadow-lg"
+            className="flex items-center justify-center py-3 bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset ring-white/60 dark:ring-white/10 hover:shadow-blue-500/20 transition-all gap-2"
           >
+            <span className="material-icons text-base">restart_alt</span>
             外倾丝杆复位
           </button>
           <button
             onClick={() => onAction('angle0')}
-            className="flex items-center justify-center py-3 bg-white dark:bg-slate-800 border border-slate-400 dark:border-slate-700 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-500 dark:hover:border-slate-600 transition-all shadow-md hover:shadow-lg"
+            className="flex items-center justify-center py-3 bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset ring-white/60 dark:ring-white/10 hover:shadow-blue-500/20 transition-all gap-2"
           >
+            <span className="material-icons text-base">settings_backup_restore</span>
             回零
           </button>
           <button
             onClick={() => onAction('zero')}
-            className="flex items-center justify-center py-3 bg-white dark:bg-slate-800 border border-slate-400 dark:border-slate-700 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-500 dark:hover:border-slate-600 transition-all shadow-md hover:shadow-lg"
+            className="flex items-center justify-center py-3 bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset ring-white/60 dark:ring-white/10 hover:shadow-blue-500/20 transition-all gap-2"
           >
+            <span className="material-icons text-base">exposure_zero</span>
             置零
           </button>
         </div>

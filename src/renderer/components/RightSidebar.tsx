@@ -146,12 +146,13 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             <button
               disabled={!canOperate}
               onClick={onStartManualToe}
-              className={`flex items-center justify-center px-4 py-1.5 text-white text-xs rounded border transition-all shrink-0 ${
+              className={`flex items-center justify-center px-4 py-1.5 text-white text-xs rounded border transition-all shrink-0 active:scale-95 backdrop-blur-md ring-1 ring-inset gap-1 ${
                 canOperate
-                  ? 'bg-blue-600 hover:bg-blue-500 shadow-md hover:shadow-lg border-blue-500'
-                  : 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500 opacity-50 cursor-not-allowed'
+                  ? 'bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 shadow-lg hover:shadow-xl border-blue-500 ring-white/20'
+                  : 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500 opacity-50 cursor-not-allowed ring-transparent'
               }`}
             >
+              <span className="material-icons text-[14px]">play_arrow</span>
               启动
             </button>
           </div>
@@ -170,12 +171,13 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             <button
               disabled={!canOperate}
               onClick={onStartManualCamber}
-              className={`flex items-center justify-center px-4 py-1.5 text-white text-xs rounded border transition-all shrink-0 ${
+              className={`flex items-center justify-center px-4 py-1.5 text-white text-xs rounded border transition-all shrink-0 active:scale-95 backdrop-blur-md ring-1 ring-inset gap-1 ${
                 canOperate
-                  ? 'bg-blue-600 hover:bg-blue-500 shadow-md hover:shadow-lg border-blue-500'
-                  : 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500 opacity-50 cursor-not-allowed'
+                  ? 'bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 shadow-lg hover:shadow-xl border-blue-500 ring-white/20'
+                  : 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500 opacity-50 cursor-not-allowed ring-transparent'
               }`}
             >
+              <span className="material-icons text-[14px]">play_arrow</span>
               启动
             </button>
           </div>
@@ -217,77 +219,95 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         {/* Controls - Top Group */}
         <div className="flex flex-col gap-3">
           {/* Forward */}
-          <div className="grid grid-cols-3 gap-2 shrink-0">
-            <button
-              disabled={!canStartForward}
-              onClick={onStartForward}
-              className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
-                canStartForward
-                  ? 'bg-blue-600 hover:bg-blue-500 text-white border-blue-500 shadow-md hover:shadow-lg'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-300 border-slate-300 dark:border-slate-600 opacity-50 cursor-not-allowed'
-              }`}
-            >
-              启动正测
-            </button>
-            <button
-              disabled={!canControlForward}
-              onClick={onSkipForward}
-              className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs transition-all shadow-md ${
-                canControlForward
-                  ? 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-700 text-slate-900 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
-                  : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed'
-              }`}
-            >
-              跳过
-            </button>
-            <button
-              disabled={!canControlForward}
-              onClick={onStopForward}
-              className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap shadow-md ${
-                canControlForward
-                  ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-500 border-red-400 dark:border-red-500/30 hover:bg-red-200 dark:hover:bg-red-600 hover:text-red-900 dark:hover:text-white hover:border-red-500 dark:hover:border-red-500'
-                  : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border-slate-300 dark:border-slate-700 opacity-50 cursor-not-allowed'
-              }`}
-            >
-              停止正测
-            </button>
+          <div className="flex flex-col gap-1 shrink-0">
+            <div className="flex items-center gap-1.5 px-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.5)]"></span>
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">正程测量</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                disabled={!canStartForward}
+                onClick={onStartForward}
+                className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap active:scale-95 backdrop-blur-md ring-1 ring-inset gap-1 ${
+                  canStartForward
+                    ? 'bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white border-blue-600 shadow-lg hover:shadow-xl ring-white/50'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-300 border-slate-400 dark:border-slate-600 opacity-50 cursor-not-allowed ring-transparent'
+                }`}
+              >
+                <span className="material-icons text-[14px]">play_circle</span>
+                启动
+              </button>
+              <button
+                disabled={!canControlForward}
+                onClick={onSkipForward}
+                className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs transition-all shadow-md active:scale-95 backdrop-blur-md ring-1 ring-inset gap-1 ${
+                  canControlForward
+                    ? 'bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white shadow-lg ring-white/60 dark:ring-white/10'
+                    : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed ring-transparent'
+                }`}
+              >
+                <span className="material-icons text-[14px]">skip_next</span>
+                跳过
+              </button>
+              <button
+                disabled={!canControlForward}
+                onClick={onStopForward}
+                className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap shadow-md active:scale-95 backdrop-blur-md ring-1 ring-inset gap-1 ${
+                  canControlForward
+                    ? 'bg-gradient-to-b from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-800/40 text-red-800 dark:text-red-500 border-red-300 dark:border-red-500/50 hover:bg-red-200 dark:hover:bg-red-600 hover:text-red-900 dark:hover:text-white shadow-lg ring-red-500/20'
+                    : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border-slate-300 dark:border-slate-700 opacity-50 cursor-not-allowed ring-transparent'
+                }`}
+              >
+                <span className="material-icons text-[14px]">stop_circle</span>
+                停止
+              </button>
+            </div>
           </div>
           
           {/* Backward */}
-          <div className="grid grid-cols-3 gap-2 shrink-0">
-            <button
-              disabled={!canStartReverse}
-              onClick={onStartReverse}
-              className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap ${
-                canStartReverse
-                  ? 'bg-blue-600 hover:bg-blue-500 text-white border-blue-500 shadow-md hover:shadow-lg'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-300 border-slate-300 dark:border-slate-600 opacity-50 cursor-not-allowed'
-              }`}
-            >
-              启动回测
-            </button>
-            <button
-              disabled={!canControlReverse}
-              onClick={onSkipReverse}
-              className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs transition-all shadow-md ${
-                canControlReverse
-                  ? 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-700 text-slate-900 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
-                  : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed'
-              }`}
-            >
-              跳过
-            </button>
-            <button
-              disabled={!canControlReverse}
-              onClick={onStopReverse}
-              className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap shadow-md ${
-                canControlReverse
-                  ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-500 border-red-400 dark:border-red-500/30 hover:bg-red-200 dark:hover:bg-red-600 hover:text-red-900 dark:hover:text-white hover:border-red-500 dark:hover:border-red-500'
-                  : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border-slate-300 dark:border-slate-700 opacity-50 cursor-not-allowed'
-              }`}
-            >
-              停止回测
-            </button>
+          <div className="flex flex-col gap-1 shrink-0">
+            <div className="flex items-center gap-1.5 px-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_5px_rgba(99,102,241,0.5)]"></span>
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">回程测量</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                disabled={!canStartReverse}
+                onClick={onStartReverse}
+                className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap active:scale-95 backdrop-blur-md ring-1 ring-inset gap-1 ${
+                  canStartReverse
+                    ? 'bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white border-blue-600 shadow-lg hover:shadow-xl ring-white/50'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-300 border-slate-400 dark:border-slate-600 opacity-50 cursor-not-allowed ring-transparent'
+                }`}
+              >
+                <span className="material-icons text-[14px]">play_circle_filled</span>
+                启动
+              </button>
+              <button
+                disabled={!canControlReverse}
+                onClick={onSkipReverse}
+                className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs transition-all shadow-md active:scale-95 backdrop-blur-md ring-1 ring-inset gap-1 ${
+                  canControlReverse
+                    ? 'bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white shadow-lg ring-white/60 dark:ring-white/10'
+                    : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed ring-transparent'
+                }`}
+              >
+                <span className="material-icons text-[14px]">skip_next</span>
+                跳过
+              </button>
+              <button
+                disabled={!canControlReverse}
+                onClick={onStopReverse}
+                className={`flex items-center justify-center py-2 border rounded text-[10px] sm:text-xs font-bold transition-all whitespace-nowrap shadow-md gap-1 ${
+                  canControlReverse
+                    ? 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-500 border-red-400 dark:border-red-500/30 hover:bg-red-200 dark:hover:bg-red-600 hover:text-red-900 dark:hover:text-white hover:border-red-500 dark:hover:border-red-500'
+                    : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border-slate-300 dark:border-slate-700 opacity-50 cursor-not-allowed'
+                }`}
+              >
+                <span className="material-icons text-[14px]">stop_circle</span>
+                停止
+              </button>
+            </div>
           </div>
         </div>
 
@@ -301,18 +321,20 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             <button
               disabled={!isConnected}
               onClick={onLockParams}
-              className={`flex items-center justify-center py-2 border rounded text-xs transition shadow-md ${
+              className={`flex items-center justify-center py-2 border rounded text-xs transition shadow-md gap-1 ${
                 isConnected
                   ? 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-600 text-slate-900 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                   : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed'
               }`}
             >
+              <span className="material-icons text-[14px]">{paramsLocked ? 'lock_open' : 'settings'}</span>
               {paramsLocked ? '解锁' : '设置'}
             </button>
             <button
               onClick={onCancel}
-              className="flex items-center justify-center py-2 bg-white dark:bg-slate-800 border border-slate-400 dark:border-slate-700/50 text-slate-900 dark:text-slate-300 rounded text-xs hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition shadow-md"
+              className="flex items-center justify-center py-2 bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-700/50 text-slate-900 dark:text-slate-300 rounded text-xs hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset ring-white/60 dark:ring-white/10 gap-1"
             >
+              <span className="material-icons text-[14px]">close</span>
               取消
             </button>
           </div>

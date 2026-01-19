@@ -62,7 +62,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             {/* Status Grid */}
             <div className="grid grid-cols-2 gap-3">
                 {/* System Status */}
-                <div className="bg-white dark:bg-slate-900/40 rounded-lg p-3 border border-slate-400 dark:border-white/5 flex flex-col justify-between gap-2 group hover:border-blue-500 dark:hover:border-blue-500/20 transition-all shadow-sm">
+                <div className="bg-white/40 dark:bg-slate-800/40 rounded-lg p-3 border border-white/20 dark:border-white/5 backdrop-blur-md shadow-inner flex flex-col justify-between gap-2 group hover:border-blue-500 dark:hover:border-blue-500/20 transition-all">
                     <span className="text-[10px] text-slate-900 dark:text-slate-500 uppercase tracking-wider font-bold">System</span>
                     <div className="flex items-center gap-2">
                          <span className="relative flex h-2 w-2">
@@ -84,7 +84,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                 </div>
 
                 {/* Link Status */}
-                <div className="bg-white dark:bg-slate-900/40 rounded-lg p-3 border border-slate-400 dark:border-white/5 flex flex-col justify-between gap-2 group hover:border-blue-500 dark:hover:border-blue-500/20 transition-all shadow-sm">
+                <div className="bg-white/40 dark:bg-slate-800/40 rounded-lg p-3 border border-white/20 dark:border-white/5 backdrop-blur-md shadow-inner flex flex-col justify-between gap-2 group hover:border-blue-500 dark:hover:border-blue-500/20 transition-all">
                     <span className="text-[10px] text-slate-900 dark:text-slate-500 uppercase tracking-wider font-bold">Link</span>
                     <div className="flex items-center gap-2">
                         <span className={`material-icons text-[10px] ${linkStable ? 'text-blue-600 dark:text-blue-500' : 'text-slate-500 dark:text-slate-600'}`}>sensors</span>
@@ -96,11 +96,11 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             </div>
 
             {/* Action Button - More integrated */}
-             <button className="w-full relative group overflow-hidden rounded-lg bg-white dark:bg-slate-800 border border-slate-400 dark:border-slate-700 hover:border-red-500 dark:hover:border-red-500/50 transition-all duration-300 shadow-md">
+             <button className="w-full relative group overflow-hidden rounded-lg bg-gradient-to-b from-white to-slate-50 dark:from-slate-700 dark:to-slate-800 border border-slate-400 dark:border-slate-500 ring-1 ring-inset ring-white/80 dark:ring-white/20 backdrop-blur-md shadow-lg active:scale-95 hover:border-red-500 dark:hover:border-red-500/50 transition-all duration-300">
                 <div className={`absolute inset-0 bg-gradient-to-r ${sensorOk ? 'from-emerald-100 to-emerald-50 dark:from-emerald-600/80 dark:to-emerald-500/80' : 'from-red-100 to-red-50 dark:from-red-600/80 dark:to-red-500/80'} translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out`}></div>
                 <div className="flex items-center justify-center gap-2 py-2 relative z-10">
                     <span className="text-[10px] font-bold tracking-[0.15em] text-slate-900 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{`SENSOR: ${sensorText}`}</span>
-                    <div className="w-5 h-5 rounded bg-slate-100 dark:bg-black/20 flex items-center justify-center group-hover:bg-white/50 transition-colors border border-slate-200 dark:border-transparent">
+                    <div className="w-5 h-5 rounded bg-slate-100 dark:bg-black/20 flex items-center justify-center group-hover:bg-white/50 transition-colors border border-slate-300 dark:border-transparent">
                         <span className={`material-icons text-xs ${sensorOk ? 'text-emerald-600 dark:text-emerald-500' : 'text-red-600 dark:text-red-500'} group-hover:text-slate-900 dark:group-hover:text-white transition-colors ${trafficPulse ? 'animate-pulse' : ''}`}>sensors</span>
                     </div>
                 </div>
@@ -127,39 +127,39 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                <button
                  disabled={disabled}
                  onClick={() => onSelectMode('QS')}
-                 className={`relative group overflow-hidden h-10 rounded-lg border transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${
+                 className={`relative group overflow-hidden h-10 rounded-lg border transition-all active:scale-95 backdrop-blur-md ring-1 ring-inset ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${
                    mode === 'QS'
-                     ? 'bg-indigo-50 border-indigo-500/60 dark:bg-indigo-600/10 dark:border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.2)]'
-                     : 'bg-white dark:bg-slate-800/50 border-slate-400 dark:border-slate-700/50 hover:border-indigo-500/60 shadow-md'
+                     ? 'bg-gradient-to-b from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-700 border-indigo-600 dark:border-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.5)] ring-white/30'
+                     : 'bg-gradient-to-b from-white to-slate-50 dark:from-slate-800/60 dark:to-slate-900/60 border-slate-400 dark:border-slate-500 ring-white/80 dark:ring-white/20 hover:border-indigo-500/60 shadow-lg hover:shadow-indigo-500/20'
                  }`}
                >
                  {mode === 'QS' ? (
-                   <div className="absolute bottom-0 left-0 h-[2px] w-full bg-indigo-500 shadow-[0_0_5px_#6366f1]"></div>
+                   <div className="absolute bottom-0 left-0 h-[2px] w-full bg-white/50 shadow-[0_0_5px_rgba(255,255,255,0.5)]"></div>
                  ) : (
                    <div className="absolute inset-0 bg-indigo-500/10 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
                  )}
                  <div className="relative flex items-center justify-center gap-2 h-full">
-                   <span className={`material-icons text-xs transition-colors ${mode === 'QS' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-900 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}`}>straighten</span>
-                   <span className={`text-[10px] font-bold transition-colors tracking-wider ${mode === 'QS' ? 'text-indigo-800 dark:text-indigo-300' : 'text-slate-900 dark:text-slate-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300'}`}>前束 / TOE</span>
+                   <span className={`material-icons text-xs transition-colors ${mode === 'QS' ? 'text-white' : 'text-slate-900 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}`}>straighten</span>
+                   <span className={`text-[10px] font-bold transition-colors tracking-wider ${mode === 'QS' ? 'text-white' : 'text-slate-900 dark:text-slate-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300'}`}>前束 / TOE</span>
                  </div>
                </button>
                <button
                  disabled={disabled}
                  onClick={() => onSelectMode('WQ')}
-                 className={`relative group overflow-hidden h-10 rounded-lg border transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${
+                 className={`relative group overflow-hidden h-10 rounded-lg border transition-all active:scale-95 backdrop-blur-md ring-1 ring-inset ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${
                    mode === 'WQ'
-                     ? 'bg-indigo-50 border-indigo-500/60 dark:bg-indigo-600/10 dark:border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.2)]'
-                     : 'bg-white dark:bg-slate-800/50 border-slate-400 dark:border-slate-700/50 hover:border-indigo-500/60 shadow-md'
+                     ? 'bg-gradient-to-b from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-indigo-700 border-indigo-600 dark:border-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.5)] ring-white/30'
+                     : 'bg-gradient-to-b from-white to-slate-50 dark:from-slate-800/60 dark:to-slate-900/60 border-slate-400 dark:border-slate-500 ring-white/80 dark:ring-white/20 hover:border-indigo-500/60 shadow-lg hover:shadow-indigo-500/20'
                  }`}
                >
                  {mode === 'WQ' ? (
-                   <div className="absolute bottom-0 left-0 h-[2px] w-full bg-indigo-500 shadow-[0_0_5px_#6366f1]"></div>
+                   <div className="absolute bottom-0 left-0 h-[2px] w-full bg-white/50 shadow-[0_0_5px_rgba(255,255,255,0.5)]"></div>
                  ) : (
                    <div className="absolute inset-0 bg-indigo-500/10 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
                  )}
                  <div className="relative flex items-center justify-center gap-2 h-full">
-                   <span className={`material-icons text-xs transition-colors ${mode === 'WQ' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-900 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}`}>settings_overscan</span>
-                   <span className={`text-[10px] font-bold transition-colors tracking-wider ${mode === 'WQ' ? 'text-indigo-800 dark:text-indigo-300' : 'text-slate-900 dark:text-slate-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300'}`}>外倾 / CAM</span>
+                   <span className={`material-icons text-xs transition-colors ${mode === 'WQ' ? 'text-white' : 'text-slate-900 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}`}>settings_overscan</span>
+                   <span className={`text-[10px] font-bold transition-colors tracking-wider ${mode === 'WQ' ? 'text-white' : 'text-slate-900 dark:text-slate-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300'}`}>外倾 / CAM</span>
                  </div>
                </button>
            </div>
@@ -185,7 +185,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                         <button
                           disabled={disabled}
                           onClick={onLinkFront}
-                          className={`w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-700 flex items-center justify-center transition-all z-20 group shadow-md ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
+                          className={`w-8 h-8 rounded-full bg-gradient-to-b from-white to-slate-100 dark:from-slate-800 dark:to-slate-900 border border-slate-400 dark:border-slate-500 ring-1 ring-inset ring-white/80 dark:ring-white/20 backdrop-blur-md flex items-center justify-center transition-all z-20 group shadow-lg active:scale-95 ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
                         >
                             <span className="material-icons text-[12px] text-slate-700 group-hover:text-indigo-600 transition-colors">link</span>
                         </button>
@@ -197,7 +197,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                         <button
                           disabled={disabled}
                           onClick={onLinkRear}
-                          className={`w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-700 flex items-center justify-center transition-all z-20 group shadow-md ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
+                          className={`w-8 h-8 rounded-full bg-gradient-to-b from-white to-slate-100 dark:from-slate-800 dark:to-slate-900 border border-slate-400 dark:border-slate-500 ring-1 ring-inset ring-white/80 dark:ring-white/20 backdrop-blur-md flex items-center justify-center transition-all z-20 group shadow-lg active:scale-95 ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
                         >
                             <span className="material-icons text-[12px] text-slate-700 group-hover:text-indigo-600 transition-colors">link</span>
                         </button>
@@ -208,7 +208,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                         <button
                           disabled={disabled}
                           onClick={onLinkLeft}
-                          className={`w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-700 flex items-center justify-center transition-all z-20 group shadow-md ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
+                          className={`w-8 h-8 rounded-full bg-gradient-to-b from-white to-slate-100 dark:from-slate-800 dark:to-slate-900 border border-slate-400 dark:border-slate-500 ring-1 ring-inset ring-white/80 dark:ring-white/20 backdrop-blur-md flex items-center justify-center transition-all z-20 group shadow-lg active:scale-95 ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
                         >
                             <span className="material-icons text-[12px] text-slate-700 group-hover:text-indigo-600 transition-colors rotate-90">link</span>
                         </button>
@@ -219,7 +219,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                         <button
                           disabled={disabled}
                           onClick={onLinkRight}
-                          className={`w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-400 dark:border-slate-700 flex items-center justify-center transition-all z-20 group shadow-md ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
+                          className={`w-8 h-8 rounded-full bg-gradient-to-b from-white to-slate-100 dark:from-slate-800 dark:to-slate-900 border border-slate-400 dark:border-slate-500 ring-1 ring-inset ring-white/80 dark:ring-white/20 backdrop-blur-md flex items-center justify-center transition-all z-20 group shadow-lg active:scale-95 ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-indigo-500 hover:shadow-[0_0_10px_rgba(99,102,241,0.4)]'}`}
                         >
                             <span className="material-icons text-[12px] text-slate-700 group-hover:text-indigo-600 transition-colors rotate-90">link</span>
                         </button>
@@ -229,12 +229,12 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                     <button
                       disabled={disabled}
                       onClick={() => onToggleWheel('FL')}
-                      className={`absolute top-0 left-0 w-12 h-20 group transition-transform ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:-translate-y-1'}`}
+                      className={`absolute top-0 left-0 w-12 h-20 group transition-all active:scale-95 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:-translate-y-1'}`}
                     >
-                        <div className={`w-full h-full border rounded-lg relative overflow-hidden shadow-lg transition-all ${
+                        <div className={`w-full h-full border rounded-lg relative overflow-hidden backdrop-blur-md transition-all ${
                           selectedWheels.FL 
-                            ? 'bg-blue-600 dark:bg-blue-600 border-blue-500 shadow-blue-500/40' 
-                            : 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-600/50 group-hover:shadow-blue-500/20 group-hover:border-blue-500/50'
+                            ? 'bg-gradient-to-b from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 border-blue-400 dark:border-blue-500 ring-1 ring-inset ring-white/30 shadow-[0_0_15px_rgba(59,130,246,0.5)]' 
+                            : 'bg-gradient-to-b from-white to-slate-100 dark:from-slate-800 dark:to-slate-900 border-slate-400 dark:border-slate-500 ring-1 ring-inset ring-white/80 dark:ring-white/20 shadow-lg group-hover:border-blue-500 group-hover:shadow-blue-500/30'
                         }`}>
                             <div className={`absolute inset-0 flex flex-col justify-between py-1 ${selectedWheels.FL ? 'opacity-30' : 'opacity-20'}`}>
                                 {[...Array(6)].map((_, i) => <div key={i} className={`h-[2px] w-full ${selectedWheels.FL ? 'bg-white' : 'bg-slate-400'}`}></div>)}
@@ -251,12 +251,12 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                     <button
                       disabled={disabled}
                       onClick={() => onToggleWheel('FR')}
-                      className={`absolute top-0 right-0 w-12 h-20 group transition-transform ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:-translate-y-1'}`}
+                      className={`absolute top-0 right-0 w-12 h-20 group transition-all active:scale-95 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:-translate-y-1'}`}
                     >
-                        <div className={`w-full h-full border rounded-lg relative overflow-hidden shadow-lg transition-all ${
+                        <div className={`w-full h-full border rounded-lg relative overflow-hidden backdrop-blur-md transition-all ${
                           selectedWheels.FR 
-                            ? 'bg-blue-600 dark:bg-blue-600 border-blue-500 shadow-blue-500/40' 
-                            : 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-600/50 group-hover:shadow-blue-500/20 group-hover:border-blue-500/50'
+                            ? 'bg-gradient-to-b from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 border-blue-400 dark:border-blue-500 ring-1 ring-inset ring-white/30 shadow-[0_0_15px_rgba(59,130,246,0.5)]' 
+                            : 'bg-gradient-to-b from-white to-slate-100 dark:from-slate-800 dark:to-slate-900 border-slate-400 dark:border-slate-500 ring-1 ring-inset ring-white/80 dark:ring-white/20 shadow-lg group-hover:border-blue-500 group-hover:shadow-blue-500/30'
                         }`}>
                              <div className={`absolute inset-0 flex flex-col justify-between py-1 ${selectedWheels.FR ? 'opacity-30' : 'opacity-20'}`}>
                                 {[...Array(6)].map((_, i) => <div key={i} className={`h-[2px] w-full ${selectedWheels.FR ? 'bg-white' : 'bg-slate-400'}`}></div>)}
@@ -276,7 +276,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                             <div className="absolute inset-2 border border-slate-400 dark:border-slate-700/30 rounded-full animate-[spin_12s_linear_infinite_reverse]"></div>
                             
                             {/* Core Button - Restore CENTER text and Red Color */}
-                            <button className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-900 border border-red-300 dark:border-red-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.2)] group hover:scale-105 hover:bg-red-500/10 hover:border-red-500 hover:shadow-[0_0_20px_rgba(239,68,68,0.5)] transition-all z-10">
+                            <button className="w-14 h-14 rounded-full bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 border border-red-300 dark:border-red-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.2)] group hover:scale-105 hover:bg-red-500/10 hover:border-red-500 hover:shadow-[0_0_20px_rgba(239,68,68,0.5)] transition-all z-10 active:scale-95 ring-1 ring-inset ring-white/60 dark:ring-white/10 backdrop-blur-md">
                                 <span className="text-[10px] font-bold text-red-700 dark:text-red-500 group-hover:text-red-800 dark:group-hover:text-white transition-colors tracking-widest">CENTER</span>
                             </button>
                             
@@ -290,12 +290,12 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                     <button
                       disabled={disabled}
                       onClick={() => onToggleWheel('RL')}
-                      className={`absolute bottom-0 left-0 w-12 h-20 group transition-transform ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:translate-y-1'}`}
+                      className={`absolute bottom-0 left-0 w-12 h-20 group transition-all active:scale-95 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:translate-y-1'}`}
                     >
-                        <div className={`w-full h-full border rounded-lg relative overflow-hidden shadow-lg transition-all ${
+                        <div className={`w-full h-full border rounded-lg relative overflow-hidden backdrop-blur-md transition-all ${
                           selectedWheels.RL 
-                            ? 'bg-blue-600 dark:bg-blue-600 border-blue-500 shadow-blue-500/40' 
-                            : 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-600/50 group-hover:shadow-blue-500/20 group-hover:border-blue-500/50'
+                            ? 'bg-gradient-to-b from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 border-blue-400 dark:border-blue-500 ring-1 ring-inset ring-white/30 shadow-[0_0_15px_rgba(59,130,246,0.5)]' 
+                            : 'bg-gradient-to-b from-white to-slate-100 dark:from-slate-800 dark:to-slate-900 border-slate-400 dark:border-slate-500 ring-1 ring-inset ring-white/80 dark:ring-white/20 shadow-lg group-hover:border-blue-500 group-hover:shadow-blue-500/30'
                         }`}>
                              <div className={`absolute inset-0 flex flex-col justify-between py-1 ${selectedWheels.RL ? 'opacity-30' : 'opacity-20'}`}>
                                 {[...Array(6)].map((_, i) => <div key={i} className={`h-[2px] w-full ${selectedWheels.RL ? 'bg-white' : 'bg-slate-400'}`}></div>)}
@@ -311,12 +311,12 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                     <button
                       disabled={disabled}
                       onClick={() => onToggleWheel('RR')}
-                      className={`absolute bottom-0 right-0 w-12 h-20 group transition-transform ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:translate-y-1'}`}
+                      className={`absolute bottom-0 right-0 w-12 h-20 group transition-all active:scale-95 ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:translate-y-1'}`}
                     >
-                        <div className={`w-full h-full border rounded-lg relative overflow-hidden shadow-lg transition-all ${
+                        <div className={`w-full h-full border rounded-lg relative overflow-hidden backdrop-blur-md transition-all ${
                           selectedWheels.RR 
-                            ? 'bg-blue-600 dark:bg-blue-600 border-blue-500 shadow-blue-500/40' 
-                            : 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-600/50 group-hover:shadow-blue-500/20 group-hover:border-blue-500/50'
+                            ? 'bg-gradient-to-b from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 border-blue-400 dark:border-blue-500 ring-1 ring-inset ring-white/30 shadow-[0_0_15px_rgba(59,130,246,0.5)]' 
+                            : 'bg-gradient-to-b from-white to-slate-100 dark:from-slate-800 dark:to-slate-900 border-slate-400 dark:border-slate-500 ring-1 ring-inset ring-white/80 dark:ring-white/20 shadow-lg group-hover:border-blue-500 group-hover:shadow-blue-500/30'
                         }`}>
                              <div className={`absolute inset-0 flex flex-col justify-between py-1 ${selectedWheels.RR ? 'opacity-30' : 'opacity-20'}`}>
                                 {[...Array(6)].map((_, i) => <div key={i} className={`h-[2px] w-full ${selectedWheels.RR ? 'bg-white' : 'bg-slate-400'}`}></div>)}

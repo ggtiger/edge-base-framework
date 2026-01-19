@@ -87,7 +87,7 @@ export const BootConfigFab: React.FC = () => {
     <>
       <button
         type="button"
-        className="fixed bottom-3 right-3 z-[120] w-10 h-10 rounded-full bg-white/40 dark:bg-slate-900/40 border border-slate-300/50 dark:border-white/10 backdrop-blur-md shadow-sm hover:shadow-md transition-opacity opacity-25 hover:opacity-100 flex items-center justify-center"
+        className="fixed bottom-3 right-3 z-[120] w-10 h-10 rounded-full bg-white/40 dark:bg-slate-900/40 border border-slate-400 dark:border-white/10 backdrop-blur-md shadow-sm hover:shadow-md transition-opacity opacity-25 hover:opacity-100 flex items-center justify-center ring-1 ring-inset ring-white/80 dark:ring-white/20"
         onClick={openModal}
         aria-label="配置"
       >
@@ -168,7 +168,7 @@ export const BootConfigFab: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    className="px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-black/5 dark:hover:bg-white/5 transition"
+                    className="px-3 py-2 text-sm rounded-lg bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset ring-white/60 dark:ring-white/10"
                     onClick={closeModal}
                     disabled={saving}
                   >
@@ -176,7 +176,7 @@ export const BootConfigFab: React.FC = () => {
                   </button>
                   <button
                     type="button"
-                    className="px-3 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition disabled:opacity-50"
+                    className="px-3 py-2 text-sm rounded-lg bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white transition disabled:opacity-50 shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset ring-white/20 border border-blue-500"
                     onClick={save}
                     disabled={loading || saving || !urlValidation.ok}
                   >

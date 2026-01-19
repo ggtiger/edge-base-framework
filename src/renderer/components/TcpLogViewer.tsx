@@ -10,7 +10,7 @@ export const TcpLogViewer: React.FC<TcpLogViewerProps> = ({ logs }) => {
   return (
     <div className="relative group h-full flex items-center">
       {/* Handle / Title Bar */}
-      <div className="h-full flex items-center gap-2 px-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors border-l border-slate-200 dark:border-slate-700">
+      <div className="h-full flex items-center gap-2 px-3 cursor-pointer hover:bg-gradient-to-b hover:from-slate-100 hover:to-slate-200 dark:hover:from-slate-800 dark:hover:to-slate-700 transition-all border-l border-slate-400 dark:border-slate-600">
         <div className="flex items-center gap-2">
             <div className={`w-1.5 h-1.5 rounded-full ${latestLog ? 'bg-blue-500 animate-pulse' : 'bg-slate-400'}`}></div>
             <span className="font-bold text-[10px] uppercase tracking-wider text-slate-600 dark:text-slate-400">TCP</span>
