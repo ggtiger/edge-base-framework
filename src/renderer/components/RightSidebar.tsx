@@ -27,6 +27,13 @@ interface RightSidebarProps {
   onStartManualToe: () => void;
   onStartManualCamber: () => void;
   disabled: boolean;
+  // JOG 点动新增
+  jogStepAngle: string;
+  onChangeJogStepAngle: (next: string) => void;
+  onJogPositive: () => void;
+  onJogNegative: () => void;
+  hasMode: boolean;
+  hasSelectedWheel: boolean;
 }
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({
@@ -52,6 +59,13 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   onStartManualToe,
   onStartManualCamber,
   disabled,
+  // JOG 点动新增
+  jogStepAngle,
+  onChangeJogStepAngle,
+  onJogPositive,
+  onJogNegative,
+  hasMode,
+  hasSelectedWheel,
 }) => {
 
   // Keypad State
@@ -112,7 +126,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   const canControlReverse = canOperate && anyRunning && activeDirection === 'reverse';
 
   return (
-    <div className="col-span-3 flex flex-col gap-4 h-full relative">
+    <div className="col-span-3 flex flex-col gap-3 h-full min-h-0 relative">
       <NumericKeypad 
         isOpen={keypadConfig.isOpen}
         title={keypadConfig.title}
@@ -122,15 +136,15 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
       />
       
       {/* Free Measure */}
-      <GlassPanel className="p-4">
-        <div className="flex items-center justify-between mb-4">
+      <GlassPanel className="p-3 flex-shrink-0">
+        <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
                 <div className="w-1 h-3 bg-blue-500 rounded-sm shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
                 <span className="text-[10px] font-bold tracking-widest text-slate-600 dark:text-slate-400">自由测量 / FREE MEASURE</span>
             </div>
             <span className="material-icons text-xs text-slate-600">tune</span>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center gap-3">
             <label className="text-xs w-10 opacity-70 font-medium shrink-0 text-slate-700 dark:text-slate-300">前束°</label>
             <input 
@@ -184,9 +198,60 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         </div>
       </GlassPanel>
 
+      {/* JOG 点动控制 */}
+      <GlassPanel className="p-3 flex-shrink-0">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-3 bg-emerald-500 rounded-sm shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+            <span className="text-[10px] font-bold tracking-widest text-slate-600 dark:text-slate-400">JOG 点动 / JOG CONTROL</span>
+          </div>
+          <span className="material-icons text-xs text-slate-600">gamepad</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <label className="text-xs w-10 opacity-70 font-medium shrink-0 text-slate-700 dark:text-slate-300">步距°</label>
+          <input 
+            type="text" 
+            value={jogStepAngle}
+            readOnly
+            onClick={() => openKeypad('JOG步距角度', jogStepAngle, onChangeJogStepAngle)}
+            placeholder="1.00" 
+            className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-sm h-8 px-2 font-display focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all cursor-pointer hover:border-blue-500/50 text-slate-900 dark:text-white"
+          />
+          <button
+            disabled={!canOperate || !hasMode || !hasSelectedWheel}
+            onClick={onJogNegative}
+            className={`flex items-center justify-center w-10 h-8 text-white text-xs rounded border transition-all shrink-0 active:scale-95 backdrop-blur-md ring-1 ring-inset ${
+              canOperate && hasMode && hasSelectedWheel
+                ? 'bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 shadow-lg hover:shadow-xl border-orange-500 ring-white/20'
+                : 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500 opacity-50 cursor-not-allowed ring-transparent'
+            }`}
+            title="JOG 负向"
+          >
+            <span className="material-icons text-[16px]">remove</span>
+          </button>
+          <button
+            disabled={!canOperate || !hasMode || !hasSelectedWheel}
+            onClick={onJogPositive}
+            className={`flex items-center justify-center w-10 h-8 text-white text-xs rounded border transition-all shrink-0 active:scale-95 backdrop-blur-md ring-1 ring-inset ${
+              canOperate && hasMode && hasSelectedWheel
+                ? 'bg-gradient-to-b from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-lg hover:shadow-xl border-emerald-500 ring-white/20'
+                : 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500 opacity-50 cursor-not-allowed ring-transparent'
+            }`}
+            title="JOG 正向"
+          >
+            <span className="material-icons text-[16px]">add</span>
+          </button>
+        </div>
+        {(!hasMode || !hasSelectedWheel) && (
+          <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-2">
+            {!hasMode ? '请先选择模式 (前束/外倾)' : '请先选择车轮位置'}
+          </div>
+        )}
+      </GlassPanel>
+
       {/* Fixed Measure */}
-      <GlassPanel className="p-4 flex-grow flex flex-col min-h-0">
-        <div className="flex items-center justify-between mb-4 flex-shrink-0">
+      <GlassPanel className="p-3 flex-grow flex flex-col min-h-0 overflow-hidden">
+        <div className="flex items-center justify-between mb-3 flex-shrink-0">
            <div className="flex items-center gap-2">
                <div className="w-1 h-3 bg-indigo-500 rounded-sm shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div>
                <span className="text-[10px] font-bold tracking-widest text-slate-400">定值测量 / FIXED MEASURE</span>
@@ -195,7 +260,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         </div>
         
         {/* Value Grid */}
-        <div className="grid grid-cols-3 gap-2 mb-6 flex-shrink-0">
+        <div className="grid grid-cols-3 gap-2 mb-4 flex-shrink-0">
           {setpoints.map((val, i) => (
              <input 
                key={i}

@@ -338,9 +338,14 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
     flow.startManualCamber();
   };
 
-  const handleAction = (action: 'hm' | 'angle0' | 'zero') => {
+  const handleAction = (action: 'hm' | 'angle0' | 'zero' | 'homing') => {
     if (!tcp.isTcpConnected) {
       window.alert('请先连接系统！！再进行启动');
+      return;
+    }
+    // 回原点不需要选择模式
+    if (action === 'homing') {
+      flow.handleAction(action);
       return;
     }
     if (!flow.mode) {
@@ -348,6 +353,39 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
       return;
     }
     flow.handleAction(action);
+  };
+
+  // JOG 点动处理
+  const handleJogPositive = () => {
+    if (!tcp.isTcpConnected) {
+      window.alert('请先连接系统！！再进行操作');
+      return;
+    }
+    if (!flow.mode) {
+      window.alert('请先选择测量模式（前束 / 外倾）！');
+      return;
+    }
+    if (!Object.values(wheels.selectedWheels).some(Boolean)) {
+      window.alert('请至少选中一个轮位！');
+      return;
+    }
+    flow.handleJog('+', wheels.selectedWheels);
+  };
+
+  const handleJogNegative = () => {
+    if (!tcp.isTcpConnected) {
+      window.alert('请先连接系统！！再进行操作');
+      return;
+    }
+    if (!flow.mode) {
+      window.alert('请先选择测量模式（前束 / 外倾）！');
+      return;
+    }
+    if (!Object.values(wheels.selectedWheels).some(Boolean)) {
+      window.alert('请至少选中一个轮位！');
+      return;
+    }
+    flow.handleJog('-', wheels.selectedWheels);
   };
 
   return (
@@ -433,7 +471,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
       </header>
 
       {/* Main Content */}
-      <main className="h-[calc(100vh-6rem)] p-4 grid grid-cols-12 gap-4 overflow-hidden relative">
+      <main className="flex-1 min-h-0 p-3 grid grid-cols-12 gap-3 overflow-hidden relative">
         <LeftSidebar
           tcpStatus={tcp.tcpStatus}
           linkStable={tcp.linkStable}
@@ -451,6 +489,9 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
           onLinkLeft={() => wheels.linkLeft(flow.paramsLocked)}
           onLinkRight={() => wheels.linkRight(flow.paramsLocked)}
           disabled={flow.paramsLocked}
+          sensorStatus={flow.sensorStatus}
+          homingStatus={flow.homingStatus}
+          homingInProgress={flow.homingInProgress}
         />
         <CenterDisplay
           mode={flow.mode}
@@ -458,6 +499,8 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
           onSelectWheel={(w) => wheels.setActiveWheel(w)}
           measurements={flow.measurements}
           onAction={handleAction}
+          homingInProgress={flow.homingInProgress}
+          onCancelHoming={() => flow.cancelHoming('User cancelled')}
         />
         <RightSidebar
           isConnected={tcp.isTcpConnected}
@@ -482,6 +525,12 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
           onStartManualToe={handleStartManualToe}
           onStartManualCamber={handleStartManualCamber}
           disabled={false}
+          jogStepAngle={flow.jogStepAngle}
+          onChangeJogStepAngle={flow.setJogStepAngle}
+          onJogPositive={handleJogPositive}
+          onJogNegative={handleJogNegative}
+          hasMode={flow.mode !== null}
+          hasSelectedWheel={Object.values(wheels.selectedWheels).some(Boolean)}
         />
       </main>
 

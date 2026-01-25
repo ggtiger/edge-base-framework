@@ -16,7 +16,7 @@ type Measurements = {
   wyh: string;
 };
 
-type CenterAction = 'hm' | 'angle0' | 'zero';
+type CenterAction = 'hm' | 'angle0' | 'zero' | 'homing';
 
 interface CenterDisplayProps {
   mode: Mode;
@@ -24,6 +24,8 @@ interface CenterDisplayProps {
   onSelectWheel: (wheel: WheelId) => void;
   measurements: Measurements;
   onAction: (action: CenterAction) => void;
+  homingInProgress: boolean;
+  onCancelHoming?: () => void;
 }
 
 export const CenterDisplay: React.FC<CenterDisplayProps> = ({
@@ -32,6 +34,8 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
   onSelectWheel,
   measurements,
   onAction,
+  homingInProgress,
+  onCancelHoming,
 }) => {
 
   const wheels: { id: WheelId; label: string; icon: string }[] = [
@@ -78,9 +82,9 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
   // const numberBoxStyle = `${baseBoxStyle} ${mode === 'QS' ? activeTheme : cyanTheme} w-24 md:w-20 h-8 md:h-8 text-center text-xs md:text-sm font-bold text-slate-900 dark:text-white`;
   return (
     <div className="col-span-6 flex flex-col h-full min-h-0">
-      <GlassPanel className="flex flex-col h-full overflow-hidden relative border border-slate-200 dark:border-white/5 shadow-2xl">
+      <GlassPanel className="flex flex-col h-full min-h-0 overflow-hidden relative border border-slate-200 dark:border-white/5 shadow-2xl">
         {/* Top Wheel Selectors */}
-        <div className="grid grid-cols-4 gap-2 p-4 bg-white/40 dark:bg-slate-800/40 border-b border-white/20 dark:border-white/5 backdrop-blur-md z-20 flex-shrink-0 shadow-sm">
+        <div className="grid grid-cols-4 gap-2 p-3 bg-white/40 dark:bg-slate-800/40 border-b border-white/20 dark:border-white/5 backdrop-blur-md z-20 flex-shrink-0 shadow-sm">
           {wheels.map((wheel) => (
             <button
               key={wheel.id}
@@ -98,15 +102,15 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
         </div>
 
         {/* Main Visualization Area */}
-        <div className="flex-grow flex items-center justify-center p-8 relative overflow-hidden group">
+        <div className="flex-grow flex items-center justify-center p-4 relative overflow-hidden group min-h-0">
           {/* Grid Background */}
           <div className="absolute inset-0 opacity-10 pointer-events-none bg-grid-pattern"></div>
           
           {/* Decorative Corner Brackets */}
-          <div className="absolute top-8 left-8 w-16 h-16 border-t-2 border-l-2 border-primary/20 rounded-tl-lg"></div>
-          <div className="absolute top-8 right-8 w-16 h-16 border-t-2 border-r-2 border-primary/20 rounded-tr-lg"></div>
-          <div className="absolute bottom-8 left-8 w-16 h-16 border-b-2 border-l-2 border-primary/20 rounded-bl-lg"></div>
-          <div className="absolute bottom-8 right-8 w-16 h-16 border-b-2 border-r-2 border-primary/20 rounded-br-lg"></div>
+          <div className="absolute top-4 left-4 w-12 h-12 border-t-2 border-l-2 border-primary/20 rounded-tl-lg"></div>
+          <div className="absolute top-4 right-4 w-12 h-12 border-t-2 border-r-2 border-primary/20 rounded-tr-lg"></div>
+          <div className="absolute bottom-4 left-4 w-12 h-12 border-b-2 border-l-2 border-primary/20 rounded-bl-lg"></div>
+          <div className="absolute bottom-4 right-4 w-12 h-12 border-b-2 border-r-2 border-primary/20 rounded-br-lg"></div>
 
           {/* Visualization Container */}
           <div className="relative w-full h-full flex items-center justify-center">
@@ -161,26 +165,30 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
         </div>
 
         {/* Bottom Actions */}
-        <div className="grid grid-cols-3 gap-3 p-4 bg-white/40 dark:bg-slate-800/40 border-t border-white/20 dark:border-white/5 backdrop-blur-md z-20 flex-shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="grid grid-cols-3 gap-2 p-3 bg-white/40 dark:bg-slate-800/40 border-t border-white/20 dark:border-white/5 backdrop-blur-md z-20 flex-shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
           <button
             onClick={() => onAction('hm')}
-            className="flex items-center justify-center py-3 bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset ring-white/60 dark:ring-white/10 hover:shadow-blue-500/20 transition-all gap-2"
+            className="flex items-center justify-center py-2 bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset ring-white/60 dark:ring-white/10 hover:shadow-blue-500/20 transition-all gap-1"
           >
-            <span className="material-icons text-base">restart_alt</span>
-            外倾丝杆复位
+            <span className="material-icons text-sm">restart_alt</span>
+            外倾复位
           </button>
           <button
-            onClick={() => onAction('angle0')}
-            className="flex items-center justify-center py-3 bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset ring-white/60 dark:ring-white/10 hover:shadow-blue-500/20 transition-all gap-2"
+            onClick={() => homingInProgress ? onCancelHoming?.() : onAction('homing')}
+            className={`flex items-center justify-center py-2 border rounded text-xs font-bold shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset transition-all gap-1 ${
+              homingInProgress
+                ? 'bg-amber-500 hover:bg-red-500 text-white border-amber-600 hover:border-red-600 animate-pulse ring-white/20 cursor-pointer'
+                : 'bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white ring-white/60 dark:ring-white/10 hover:shadow-blue-500/20'
+            }`}
           >
-            <span className="material-icons text-base">settings_backup_restore</span>
-            回零
+            <span className={`material-icons text-sm ${homingInProgress ? 'animate-spin' : ''}`}>{homingInProgress ? 'sync' : 'settings_backup_restore'}</span>
+            {homingInProgress ? '点击取消' : '回原点'}
           </button>
           <button
             onClick={() => onAction('zero')}
-            className="flex items-center justify-center py-3 bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset ring-white/60 dark:ring-white/10 hover:shadow-blue-500/20 transition-all gap-2"
+            className="flex items-center justify-center py-2 bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset ring-white/60 dark:ring-white/10 hover:shadow-blue-500/20 transition-all gap-1"
           >
-            <span className="material-icons text-base">exposure_zero</span>
+            <span className="material-icons text-sm">exposure_zero</span>
             置零
           </button>
         </div>

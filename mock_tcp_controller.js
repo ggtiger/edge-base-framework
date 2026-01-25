@@ -32,10 +32,15 @@ function createInitialState() {
     ackDelayTicks: 0,
     statusrc: 0,
     speedFactor: 0.2,
+    // 传感器状态：1=在位, 0=离位
+    sensorStatus: [1, 1, 1, 1],
     sensorFaultTicks: 0,
+    // 回原点状态：0=待机, 1=进行中, 2=完成
+    homingStatus: [0, 0, 0, 0],
+    homingInProgress: false,
+    homingTicks: 0,
+    homingTimeout: false,
     linkDropTicks: 0,
-    heartbeatDelayTicks: 0,
-    pendingHeartbeat: null,
     frameCounter: 0,
   };
 }
@@ -58,39 +63,79 @@ function decodeRelay(bits) {
 function parseCommand(raw) {
   const cmd = raw.trim();
   if (!cmd) return null;
+
+  // 心跳命令
   if (cmd === 'S1F1') {
     return { kind: 'heartbeat' };
   }
-  const isQS = cmd.includes('QS:Relay');
-  const isWQ = cmd.includes('WQ:Relay');
-  if (!isQS && !isWQ) return null;
-  const mode = isQS ? 'QS' : 'WQ';
-  const idx = cmd.indexOf('Relay');
-  if (idx < 0) return null;
-  const afterRelay = cmd.slice(idx + 'Relay'.length);
-  const nextModeIdx = afterRelay.search(/QS:|WQ:|QS_|WQ_/);
-  const relayBits = nextModeIdx >= 0 ? afterRelay.slice(0, nextModeIdx) : afterRelay;
-  let cmdType = null;
-  let angle = null;
-  const angleMatch = cmd.match(/(QS|WQ):Angle(-?[0-9.]+)/);
-  if (angleMatch) {
-    cmdType = 'angle';
-    angle = parseFloat(angleMatch[2]);
-  } else if (cmd.includes('QS_ZERO') || cmd.includes('WQ_ZERO')) {
-    cmdType = 'zero';
-  } else if (cmd.includes('QS_HM') || cmd.includes('WQ_HM')) {
-    cmdType = 'hm';
-  } else {
-    cmdType = 'other';
+
+  // 回原点命令
+  if (cmd === 'START_HOMING') {
+    return { kind: 'homing' };
   }
-  return {
-    kind: 'control',
-    mode,
-    relayBits: relayBits.trim(),
-    cmdType,
-    angle,
-    raw,
-  };
+
+  // 状态同步命令
+  if (cmd === 'SYNC_STATUS') {
+    return { kind: 'sync' };
+  }
+
+  // 零点校准命令: QS_ZERO 或 WQ_ZERO
+  if (cmd === 'QS_ZERO' || cmd === 'WQ_ZERO') {
+    return {
+      kind: 'control',
+      mode: cmd.startsWith('QS') ? 'QS' : 'WQ',
+      cmdType: 'zero',
+      relayBits: '111111', // 全部轮位
+    };
+  }
+
+  // 丝杆复位命令: QS_HM 或 WQ_HM
+  if (cmd === 'QS_HM' || cmd === 'WQ_HM') {
+    return {
+      kind: 'control',
+      mode: cmd.startsWith('QS') ? 'QS' : 'WQ',
+      cmdType: 'hm',
+      relayBits: '111111',
+    };
+  }
+
+  // 归零命令: QS:Angle0 或 WQ:Angle0
+  const angle0Match = cmd.match(/^(QS|WQ):Angle0$/);
+  if (angle0Match) {
+    return {
+      kind: 'control',
+      mode: angle0Match[1],
+      cmdType: 'angle',
+      angle: 0,
+      relayBits: '111111',
+    };
+  }
+
+  // 角度控制命令: {QS|WQ}:Relay{bits}Angle{value}
+  const angleMatch = cmd.match(/^(QS|WQ):Relay(\d+)Angle(-?[\d.]+)$/);
+  if (angleMatch) {
+    return {
+      kind: 'control',
+      mode: angleMatch[1],
+      relayBits: angleMatch[2],
+      cmdType: 'angle',
+      angle: parseFloat(angleMatch[3]),
+    };
+  }
+
+  // JOG点动命令: {QS|WQ}:Relay{bits}JOG{±value}
+  const jogMatch = cmd.match(/^(QS|WQ):Relay(\d+)JOG(-?[\d.]+)$/);
+  if (jogMatch) {
+    return {
+      kind: 'control',
+      mode: jogMatch[1],
+      relayBits: jogMatch[2],
+      cmdType: 'jog',
+      jogStep: parseFloat(jogMatch[3]),
+    };
+  }
+
+  return null;
 }
 
 function updateTargets(state, parsed) {
@@ -101,6 +146,8 @@ function updateTargets(state, parsed) {
   state.lastCommandMode = state.mode;
   state.lastCommandType = parsed.cmdType;
   state.moving = false;
+
+  // 角度控制
   if (parsed.cmdType === 'angle' && typeof parsed.angle === 'number' && state.mode) {
     state.speedFactor = 0.15;
     const target = parsed.angle;
@@ -121,9 +168,46 @@ function updateTargets(state, parsed) {
     });
     state.moving = keys.length > 0;
     state.ackPending = state.mode + 'RECVOK';
-    state.ackDelayTicks = Math.floor(Math.random() * 6);
-  } else if (parsed.cmdType === 'zero' && state.mode) {
-    state.speedFactor = 0.1;
+    state.ackDelayTicks = Math.floor(Math.random() * 6) + 2;
+  }
+  // JOG点动
+  else if (parsed.cmdType === 'jog' && typeof parsed.jogStep === 'number' && state.mode) {
+    state.speedFactor = 0.3;
+    const keys = [];
+    if (state.mode === 'QS') {
+      if (state.selectedWheels.FL) keys.push('qzq');
+      if (state.selectedWheels.FR) keys.push('qyq');
+      if (state.selectedWheels.RL) keys.push('qzh');
+      if (state.selectedWheels.RR) keys.push('qyh');
+    } else if (state.mode === 'WQ') {
+      if (state.selectedWheels.FL) keys.push('wzq');
+      if (state.selectedWheels.FR) keys.push('wyq');
+      if (state.selectedWheels.RL) keys.push('wzh');
+      if (state.selectedWheels.RR) keys.push('wyh');
+    }
+    keys.forEach(k => {
+      state.targets[k] = state.measurements[k] + parsed.jogStep;
+    });
+    state.moving = keys.length > 0;
+    state.ackPending = state.mode + 'RECVOK';
+    state.ackDelayTicks = Math.floor(Math.random() * 3) + 1;
+  }
+  // 零点校准
+  else if (parsed.cmdType === 'zero' && state.mode) {
+    // 将当前位置设为零点
+    const keys = state.mode === 'QS'
+      ? ['qzq', 'qyq', 'qzh', 'qyh']
+      : ['wzq', 'wyq', 'wzh', 'wyh'];
+    keys.forEach(k => {
+      state.measurements[k] = 0;
+      state.targets[k] = 0;
+    });
+    state.ackPending = state.mode + '_ZEROOK';
+    state.ackDelayTicks = Math.floor(Math.random() * 3) + 1;
+  }
+  // 丝杆复位
+  else if (parsed.cmdType === 'hm' && state.mode) {
+    state.speedFactor = 0.06;
     const keys = state.mode === 'QS'
       ? ['qzq', 'qyq', 'qzh', 'qyh']
       : ['wzq', 'wyq', 'wzh', 'wyh'];
@@ -131,23 +215,53 @@ function updateTargets(state, parsed) {
       state.targets[k] = 0;
     });
     state.moving = true;
-    state.ackPending = state.mode + '_ZEROOK';
-    state.ackDelayTicks = Math.floor(Math.random() * 8);
-  } else if (parsed.cmdType === 'hm' && state.mode) {
-    state.speedFactor = 0.06;
-    state.moving = true;
     state.ackPending = state.mode + '_HMOK';
-    state.ackDelayTicks = Math.floor(Math.random() * 10);
-  } else {
+    state.ackDelayTicks = Math.floor(Math.random() * 10) + 5;
+  }
+  else {
     state.moving = false;
     state.ackPending = null;
   }
 }
 
-function stepValue(current, target) {
+function startHoming(state) {
+  state.homingInProgress = true;
+  state.homingStatus = [1, 1, 1, 1]; // 全部开始回原点
+  state.homingTicks = 0;
+  state.homingTimeout = false;
+}
+
+function tickHoming(state) {
+  if (!state.homingInProgress) return;
+
+  state.homingTicks += 1;
+
+  // 模拟回原点超时（小概率）
+  if (state.homingTicks > 100 && Math.random() < 0.01) {
+    state.homingTimeout = true;
+    state.homingInProgress = false;
+    state.homingStatus = [0, 0, 0, 0];
+    return;
+  }
+
+  // 模拟各电机逐个完成
+  const completionTicks = [15, 20, 25, 30];
+  for (let i = 0; i < 4; i++) {
+    if (state.homingStatus[i] === 1 && state.homingTicks >= completionTicks[i]) {
+      state.homingStatus[i] = 2; // 完成
+    }
+  }
+
+  // 检查是否全部完成
+  if (state.homingStatus.every(s => s === 2)) {
+    state.homingInProgress = false;
+  }
+}
+
+function stepValue(current, target, factor) {
   const diff = target - current;
-  if (Math.abs(diff) < 0.001) return target;
-  return current + diff;
+  if (Math.abs(diff) < 0.005) return target;
+  return current + diff * factor;
 }
 
 function jitter(value) {
@@ -157,17 +271,25 @@ function jitter(value) {
 }
 
 function tickState(state) {
-  if (!state.mode) {
-    state.statusrc = 0;
-    return;
+  // 处理回原点
+  tickHoming(state);
+
+  // 模拟传感器状态变化
+  if (state.sensorFaultTicks > 0) {
+    state.sensorFaultTicks -= 1;
+    if (state.sensorFaultTicks === 0) {
+      // 恢复传感器
+      state.sensorStatus = [1, 1, 1, 1];
+    }
+  } else if (Math.random() < 0.01) {
+    // 随机产生传感器故障
+    const faultIdx = Math.floor(Math.random() * 4);
+    state.sensorStatus[faultIdx] = 0;
+    state.sensorFaultTicks = 30 + Math.floor(Math.random() * 30);
   }
+
   if (!state.moving) {
     state.statusrc = 0;
-    if (state.sensorFaultTicks > 0) {
-      state.sensorFaultTicks -= 1;
-    } else if (Math.random() < 0.02) {
-      state.sensorFaultTicks = 20 + Math.floor(Math.random() * 20);
-    }
     Object.keys(state.measurements).forEach(k => {
       const target = state.targets[k];
       if (typeof target === 'number') {
@@ -178,6 +300,7 @@ function tickState(state) {
     });
     return;
   }
+
   let anyMoving = false;
   Object.keys(state.measurements).forEach(k => {
     const current = state.measurements[k];
@@ -186,9 +309,7 @@ function tickState(state) {
       state.measurements[k] = jitter(current);
       return;
     }
-    const nextStep = stepValue(current, target);
-    const stepSize = (nextStep - current) * state.speedFactor;
-    const next = current + stepSize;
+    const next = stepValue(current, target, state.speedFactor);
     const distance = Math.abs(next - target);
     if (distance <= 0.005) {
       state.measurements[k] = target;
@@ -198,102 +319,133 @@ function tickState(state) {
     }
   });
   state.statusrc = anyMoving ? 1 : 0;
-  if (!anyMoving && state.sensorFaultTicks > 0 && Math.random() < 0.3) {
-    state.statusrc = 1;
-  }
   state.moving = anyMoving;
 }
 
-function buildFrame(state, withSensorOk, extra) {
+// 构建标准数据帧
+function buildDataFrame(state) {
   const m = state.measurements;
   const status = state.statusrc;
-  const prefix = ',0,0,0,0 </2;0;0;1;0;33;0;0;0;32000;0;0;/> _';
-  let frame =
-    prefix +
-    'ST_status' +
-    String(status) +
-    'qzq' +
-    m.qzq.toFixed(2) +
-    'qyq' +
-    m.qyq.toFixed(2) +
-    'qzh' +
-    m.qzh.toFixed(2) +
-    'qyh' +
-    m.qyh.toFixed(2) +
-    'wzq' +
-    m.wzq.toFixed(2) +
-    'wyq' +
-    m.wyq.toFixed(2) +
-    'wzh' +
-    m.wzh.toFixed(2) +
-    'wyh' +
-    m.wyh.toFixed(2) +
+  return '_ST_status' + status +
+    'qzq' + m.qzq.toFixed(2) +
+    'qyq' + m.qyq.toFixed(2) +
+    'qzh' + m.qzh.toFixed(2) +
+    'qyh' + m.qyh.toFixed(2) +
+    'wzq' + m.wzq.toFixed(2) +
+    'wyq' + m.wyq.toFixed(2) +
+    'wzh' + m.wzh.toFixed(2) +
+    'wyh' + m.wyh.toFixed(2) +
     'ND';
-  if (extra) {
-    frame += extra;
-  }
-  return frame;
+}
+
+// 构建传感器状态消息
+function buildSensorFrame(state) {
+  return 'SENSOR,' + state.sensorStatus.join(',');
+}
+
+// 构建回原点状态消息
+function buildHomingFrame(state) {
+  return 'HOMING_STATUS,' + state.homingStatus.join(',');
 }
 
 function handleConnection(socket) {
   socket.setEncoding('ascii');
   const state = createInitialState();
+  let sensorSendCounter = 0;
+
   const timer = setInterval(() => {
     tickState(state);
-    if (state.heartbeatDelayTicks > 0) {
-      state.heartbeatDelayTicks -= 1;
-      if (state.heartbeatDelayTicks === 0 && state.pendingHeartbeat && state.linkDropTicks === 0) {
-        socket.write(state.pendingHeartbeat);
-        state.pendingHeartbeat = null;
-      }
-    }
+
     if (state.linkDropTicks > 0) {
       state.linkDropTicks -= 1;
       return;
     }
-    if (Math.random() < 0.02) {
-      state.linkDropTicks = 15 + Math.floor(Math.random() * 25);
+
+    // 小概率链路中断
+    if (Math.random() < 0.01) {
+      state.linkDropTicks = 10 + Math.floor(Math.random() * 20);
       return;
     }
+
     state.frameCounter += 1;
-    const forceSensorError = state.frameCounter % 10 === 0;
-    const withSensorOk = !forceSensorError && state.sensorFaultTicks === 0;
-    let extra = null;
+
+    // 发送标准数据帧
+    let frame = buildDataFrame(state);
+
+    // 附加命令完成消息
     if (!state.moving && state.ackPending) {
       if (state.ackDelayTicks > 0) {
         state.ackDelayTicks -= 1;
-      } else if (Math.random() < 0.95) {
-        extra = state.ackPending;
-        state.ackPending = null;
       } else {
+        frame += state.ackPending;
         state.ackPending = null;
       }
     }
-    const frame = buildFrame(state, withSensorOk, extra);
-    socket.write(frame);
+
+    socket.write(frame + '\n');
+
+    // 定期发送传感器状态（每10帧）
+    sensorSendCounter += 1;
+    if (sensorSendCounter >= 10) {
+      sensorSendCounter = 0;
+      socket.write(buildSensorFrame(state) + '\n');
+    }
+
+    // 回原点进行中时发送状态
+    if (state.homingInProgress) {
+      socket.write(buildHomingFrame(state) + '\n');
+    }
+
+    // 回原点超时
+    if (state.homingTimeout) {
+      socket.write('_HOMING_TIMEOUT\n');
+      state.homingTimeout = false;
+    }
+
   }, 200);
+
   socket.on('data', chunk => {
-    const trimmed = chunk.toString('ascii').trim();
-    if (!trimmed) return;
-    const parsed = parseCommand(trimmed);
-    if (!parsed) return;
-    if (parsed.kind === 'heartbeat') {
-      if (state.linkDropTicks > 0) return;
-      const frame = buildFrame(state, true, null);
-      if (Math.random() < 0.3) {
-        state.heartbeatDelayTicks = 5 + Math.floor(Math.random() * 15);
-        state.pendingHeartbeat = frame;
+    const lines = chunk.toString('ascii').trim().split('\n');
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+
+      const parsed = parseCommand(trimmed);
+      if (!parsed) {
+        console.log('Unknown command:', trimmed);
         return;
       }
-      socket.write(frame);
-    } else if (parsed.kind === 'control') {
-      updateTargets(state, parsed);
-    }
+
+      console.log('Received:', parsed.kind, trimmed);
+
+      if (parsed.kind === 'heartbeat') {
+        if (state.linkDropTicks > 0) return;
+        socket.write(buildDataFrame(state) + '\n');
+      }
+      else if (parsed.kind === 'homing') {
+        startHoming(state);
+        socket.write(buildHomingFrame(state) + '\n');
+      }
+      else if (parsed.kind === 'sync') {
+        socket.write(buildDataFrame(state) + '\n');
+        socket.write(buildSensorFrame(state) + '\n');
+        if (state.homingInProgress) {
+          socket.write(buildHomingFrame(state) + '\n');
+        }
+      }
+      else if (parsed.kind === 'control') {
+        updateTargets(state, parsed);
+      }
+    });
   });
+
   socket.on('close', () => {
+    console.log('Client disconnected');
     clearInterval(timer);
   });
-  socket.on('error', () => {
+
+  socket.on('error', (err) => {
+    console.log('Socket error:', err.message);
     clearInterval(timer);
   });
 }
@@ -303,7 +455,16 @@ function startServer(port) {
   server.listen(port, '0.0.0.0', () => {
     const addr = server.address();
     if (addr && typeof addr === 'object') {
-      process.stdout.write('Mock TCP controller listening on ' + addr.address + ':' + addr.port + '\n');
+      console.log('Mock TCP controller listening on ' + addr.address + ':' + addr.port);
+      console.log('Protocol: TCP通信协议.md v1.1');
+      console.log('Supported commands:');
+      console.log('  - {QS|WQ}:Relay{bits}Angle{value}  角度控制');
+      console.log('  - {QS|WQ}:Relay{bits}JOG{±step}    JOG点动');
+      console.log('  - START_HOMING                     回原点');
+      console.log('  - SYNC_STATUS                      状态同步');
+      console.log('  - {QS|WQ}_ZERO                     零点校准');
+      console.log('  - {QS|WQ}_HM                       丝杆复位');
+      console.log('  - {QS|WQ}:Angle0                   归零');
     }
   });
 }

@@ -16,6 +16,12 @@ export type Measurements = {
   wyh: string;
 };
 
+/** 传感器状态 (4个传感器) */
+export type SensorStatus = [boolean, boolean, boolean, boolean];
+
+/** 回原点状态：0=未动作, 1=进行中, 2=完成 */
+export type HomingStatus = [0 | 1 | 2, 0 | 1 | 2, 0 | 1 | 2, 0 | 1 | 2];
+
 /**
  * 计算继电器控制码
  */
@@ -41,6 +47,39 @@ export function buildCommand(
   const relayrc = computeRelayrc(mode, selectedWheels);
   const relayBinary = relayrc.toString(2);
   return `${mode}:Relay${relayBinary}${pls}`;
+}
+
+/**
+ * 构建JOG点动命令
+ * @param mode 模式 QS/WQ
+ * @param stepAngle 步距角度
+ * @param direction 方向 '+' 或 '-'
+ * @param selectedWheels 选中的轮位
+ */
+export function buildJogCommand(
+  mode: Exclude<Mode, null>,
+  stepAngle: number,
+  direction: '+' | '-',
+  selectedWheels: Record<WheelId, boolean>
+): string {
+  const relayrc = computeRelayrc(mode, selectedWheels);
+  const relayBinary = relayrc.toString(2);
+  const angleValue = direction === '+' ? stepAngle : -stepAngle;
+  return `${mode}:Relay${relayBinary}JOG${angleValue.toFixed(2)}`;
+}
+
+/**
+ * 构建回原点命令
+ */
+export function buildHomingCommand(): string {
+  return 'START_HOMING';
+}
+
+/**
+ * 构建状态同步命令
+ */
+export function buildSyncCommand(): string {
+  return 'SYNC_STATUS';
 }
 
 /**
@@ -111,16 +150,49 @@ export function parseInboundData(raw: string): {
   statusrc: number | null;
   measurements: Partial<Measurements>;
   isAck: boolean;
+  sensorStatus: SensorStatus | null;
+  homingStatus: HomingStatus | null;
+  homingTimeout: boolean;
 } {
   const str = raw.replace(/\0/g, '').trim();
   let sensorOk: boolean | null = null;
   let statusrc: number | null = null;
   const measurements: Partial<Measurements> = {};
   let isAck = false;
+  let sensorStatus: SensorStatus | null = null;
+  let homingStatus: HomingStatus | null = null;
+  let homingTimeout = false;
 
-  // 传感器状态
+  // 传感器状态 (旧格式)
   if (str.includes('SensorNG')) sensorOk = false;
   if (str.includes('SensorOK')) sensorOk = true;
+
+  // 传感器状态消息: SENSOR,{值1},{值2},{值3},{值4}
+  const sensorMatch = str.match(/SENSOR,(\d),(\d),(\d),(\d)/);
+  if (sensorMatch) {
+    sensorStatus = [
+      sensorMatch[1] === '1',
+      sensorMatch[2] === '1',
+      sensorMatch[3] === '1',
+      sensorMatch[4] === '1',
+    ];
+  }
+
+  // 回原点状态消息: HOMING_STATUS,{电机0},{电机1},{电机2},{电机3}
+  const homingMatch = str.match(/HOMING_STATUS,(\d),(\d),(\d),(\d)/);
+  if (homingMatch) {
+    homingStatus = [
+      Math.min(2, Math.max(0, parseInt(homingMatch[1], 10))) as 0 | 1 | 2,
+      Math.min(2, Math.max(0, parseInt(homingMatch[2], 10))) as 0 | 1 | 2,
+      Math.min(2, Math.max(0, parseInt(homingMatch[3], 10))) as 0 | 1 | 2,
+      Math.min(2, Math.max(0, parseInt(homingMatch[4], 10))) as 0 | 1 | 2,
+    ];
+  }
+
+  // 回原点超时消息: _HOMING_TIMEOUT
+  if (str.includes('_HOMING_TIMEOUT')) {
+    homingTimeout = true;
+  }
 
   // 状态码
   const statusMatch = str.match(/ST_status\s*([0-9]+)/i) ?? str.match(/ST_status([0-9]+)/i);
@@ -182,5 +254,5 @@ export function parseInboundData(raw: string): {
     str.includes('WQ_HMOK') ||
     str.includes('WQRECVOK');
 
-  return { sensorOk, statusrc, measurements, isAck };
+  return { sensorOk, statusrc, measurements, isAck, sensorStatus, homingStatus, homingTimeout };
 }
