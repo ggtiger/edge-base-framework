@@ -194,7 +194,7 @@ export function useCalibrationFlow(
         }
 
         const sp = normalizeAngleText(setpoints[next - 1] ?? '');
-        const nextPls = `${mode}:Angle${sp}`;
+        const nextPls = `Angle${sp}`;  // 不包含模式前缀，buildCommand 会添加
 
         setPls(nextPls);
         setStepStatus(prevStatus => {
@@ -261,7 +261,7 @@ export function useCalibrationFlow(
     (action: 'hm' | 'angle0' | 'zero' | 'homing') => {
       if (!isTcpConnected) return;
 
-      // 新增：回原点动作（全局）
+      // 回原点动作（全局命令，直接发送）
       if (action === 'homing') {
         sendTcpCmd(buildHomingCommand());
         setHomingInProgress(true);
@@ -271,21 +271,22 @@ export function useCalibrationFlow(
 
       if (!mode) return;
 
+      // 归零命令：直接发送，不经过 buildCommand
       if (action === 'angle0') {
-        setPls(`${mode}:Angle0`);
-        setSendEnabled(true);
+        sendTcpCmd(`${mode}:Angle0`);
         return;
       }
 
+      // 零点校准命令：直接发送
       if (action === 'zero') {
-        setPls(`${mode}_ZERO`);
-        setSendEnabled(true);
+        sendTcpCmd(`${mode}_ZERO`);
         return;
       }
 
+      // 丝杆复位命令：直接发送
       if (action === 'hm') {
-        setPls(`${mode}_HM`);
-        setSendEnabled(true);
+        sendTcpCmd(`${mode}_HM`);
+        return;
       }
     },
     [isTcpConnected, mode, sendTcpCmd]
@@ -308,7 +309,7 @@ export function useCalibrationFlow(
     if (!isTcpConnected) return;
     const value = normalizeAngleText(freeMeasure.toe);
     setFreeMeasure(prev => ({ ...prev, toe: value }));
-    const nextPls = `QS:Angle${value}`;
+    const nextPls = `Angle${value}`;  // 不包含模式前缀
     setMode('QS');
     setPls(nextPls);
     setSendEnabled(true);
@@ -318,7 +319,7 @@ export function useCalibrationFlow(
     if (!isTcpConnected) return;
     const value = normalizeAngleText(freeMeasure.camber);
     setFreeMeasure(prev => ({ ...prev, camber: value }));
-    const nextPls = `WQ:Angle${value}`;
+    const nextPls = `Angle${value}`;  // 不包含模式前缀
     setMode('WQ');
     setPls(nextPls);
     setSendEnabled(true);
