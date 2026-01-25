@@ -71,6 +71,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadDll: (path: string) => ipcRenderer.invoke('dll:load', path),
   callDll: (path: string, func: string, ...args: any[]) => ipcRenderer.invoke('dll:call-example', path, func, ...args),
 
+  // Network
+  checkWifi: () => ipcRenderer.invoke('network:check-wifi'),
+  setLocalIp: () => ipcRenderer.invoke('network:set-local-ip'),
+  checkNetwork: () => ipcRenderer.invoke('network:check-all'),
+  getNetworkConfig: () => ipcRenderer.invoke('network:get-config'),
+
   // App Ready
   notifyAppReady: () => ipcRenderer.send('app:renderer-ready')
 })

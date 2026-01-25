@@ -55,6 +55,28 @@ interface Window {
     loadDll: (path: string) => Promise<{ success: boolean; message: string }>
     callDll: (path: string, func: string, ...args: any[]) => Promise<{ success: boolean; result?: any; message?: string }>
 
+    // Network
+    checkWifi: () => Promise<{ connected: boolean; ssid: string | null; localIp: string | null }>
+    setLocalIp: () => Promise<{ success: boolean; message: string; localIp?: string }>
+    checkNetwork: () => Promise<{
+      wifiOk: boolean
+      ipOk: boolean
+      ssid: string | null
+      localIp: string | null
+      targetSsid: string
+      targetIp: string
+      serverAddress: string
+      message: string
+    }>
+    getNetworkConfig: () => Promise<{
+      targetSsid: string
+      targetIp: string
+      targetSubnet: string
+      serverIp: string
+      serverPort: number
+      wifiPassword: string
+    }>
+
     // App Ready
     notifyAppReady: () => void
   }

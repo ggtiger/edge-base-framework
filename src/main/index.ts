@@ -11,6 +11,7 @@ import { setupSysInfoService } from './services/sysInfo'
 import { setupUpdateService } from './services/update'
 import { setupSerialService } from './services/serial'
 import { setupDllService } from './services/dll'
+import { setupNetworkService } from './services/network'
 import { getRendererUpdateInfo, installRendererUpdateFromUrl, loadRenderer, setupRendererUpdateService } from './services/rendererUpdate'
 import store from './store'
 
@@ -464,6 +465,7 @@ app.whenReady().then(async () => {
             setupUpdateService(win!)
             setupSerialService(win!)
             setupDllService(win!)
+            setupNetworkService(win!)
             setupRendererUpdateService(win!)
             setupBootConfigService()
         })
