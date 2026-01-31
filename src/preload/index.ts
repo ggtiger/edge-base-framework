@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   connectTcp: (host: string, port: number) => ipcRenderer.send('tcp:connect', host, port),
   disconnectTcp: () => ipcRenderer.send('tcp:disconnect'),
   sendTcp: (data: string) => ipcRenderer.send('tcp:send', data),
+  clearTcpQueue: () => ipcRenderer.send('tcp:clear-queue'),
   onTcpData: (callback: (data: string) => void) => {
     const subscription = (_: any, data: string) => callback(data)
     ipcRenderer.on('tcp:data-received', subscription)
@@ -17,6 +18,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('tcp:status-change', subscription)
     return () => {
       ipcRenderer.removeListener('tcp:status-change', subscription)
+    }
+  },
+  onTcpCommandFailed: (callback: (command: string) => void) => {
+    const subscription = (_: any, command: string) => callback(command)
+    ipcRenderer.on('tcp:command-failed', subscription)
+    return () => {
+      ipcRenderer.removeListener('tcp:command-failed', subscription)
     }
   },
   getTcpConfig: () => ipcRenderer.invoke('tcp:get-config'),

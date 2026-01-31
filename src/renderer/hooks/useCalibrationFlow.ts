@@ -295,11 +295,20 @@ export function useCalibrationFlow(
   // 新增：JOG 点动控制
   const handleJog = useCallback(
     (direction: '+' | '-', selectedWheels: Record<WheelId, boolean>) => {
-      if (!isTcpConnected || !mode) return;
-      if (!Object.values(selectedWheels).some(Boolean)) return;
+      console.log('handleJog called:', { direction, selectedWheels, isTcpConnected, mode, jogStepAngle });
+      
+      if (!isTcpConnected || !mode) {
+        console.warn('JOG blocked: not connected or no mode', { isTcpConnected, mode });
+        return;
+      }
+      if (!Object.values(selectedWheels).some(Boolean)) {
+        console.warn('JOG blocked: no wheel selected');
+        return;
+      }
       
       const stepAngle = parseFloat(jogStepAngle) || 1.0;
       const cmd = buildJogCommand(mode, stepAngle, direction, selectedWheels);
+      console.log('JOG command:', cmd);
       sendTcpCmd(cmd);
     },
     [isTcpConnected, mode, jogStepAngle, sendTcpCmd]

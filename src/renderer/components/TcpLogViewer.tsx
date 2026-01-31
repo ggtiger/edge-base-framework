@@ -1,11 +1,22 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
+
+type LogFilter = 'ALL' | 'TX' | 'RX';
 
 interface TcpLogViewerProps {
   logs: { direction: 'TX' | 'RX' | 'SYS'; content: string; timestamp: number }[];
 }
 
 export const TcpLogViewer: React.FC<TcpLogViewerProps> = ({ logs }) => {
+  const [filter, setFilter] = useState<LogFilter>('ALL');
+  
+  const filteredLogs = useMemo(() => {
+    if (filter === 'ALL') return logs;
+    return logs.filter(log => log.direction === filter);
+  }, [logs, filter]);
+  
   const latestLog = logs[0];
+  const txCount = useMemo(() => logs.filter(l => l.direction === 'TX').length, [logs]);
+  const rxCount = useMemo(() => logs.filter(l => l.direction === 'RX').length, [logs]);
 
   return (
     <div className="relative group h-full flex items-center">
@@ -37,14 +48,44 @@ export const TcpLogViewer: React.FC<TcpLogViewerProps> = ({ logs }) => {
       <div className="absolute bottom-full left-0 mb-0 w-[600px] max-w-[90vw] opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 translate-y-2 group-hover:translate-y-0 bg-slate-900/95 backdrop-blur border border-slate-700 rounded-lg shadow-2xl overflow-hidden z-[9999]">
         <div className="h-8 flex items-center justify-between px-3 bg-slate-800/80 border-b border-slate-700/50">
              <span className="text-[10px] font-bold text-slate-400 font-sans">通信日志 (最新在前)</span>
-             <div className="flex items-center gap-2 text-[9px] text-slate-500">
-                <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>RX</span>
-                <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>TX</span>
+             <div className="flex items-center gap-1 text-[9px]">
+                <button
+                  onClick={() => setFilter('ALL')}
+                  className={`px-2 py-0.5 rounded transition-colors ${
+                    filter === 'ALL'
+                      ? 'bg-blue-500/30 text-blue-300'
+                      : 'text-slate-500 hover:bg-slate-700'
+                  }`}
+                >
+                  全部 ({logs.length})
+                </button>
+                <button
+                  onClick={() => setFilter('RX')}
+                  className={`px-2 py-0.5 rounded flex items-center gap-1 transition-colors ${
+                    filter === 'RX'
+                      ? 'bg-emerald-500/30 text-emerald-300'
+                      : 'text-slate-500 hover:bg-slate-700'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  RX ({rxCount})
+                </button>
+                <button
+                  onClick={() => setFilter('TX')}
+                  className={`px-2 py-0.5 rounded flex items-center gap-1 transition-colors ${
+                    filter === 'TX'
+                      ? 'bg-amber-500/30 text-amber-300'
+                      : 'text-slate-500 hover:bg-slate-700'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  TX ({txCount})
+                </button>
             </div>
         </div>
         <div className="h-64 overflow-y-auto p-2 flex flex-col gap-0.5 font-mono text-xs">
-            {logs.length === 0 && <div className="text-slate-500 italic p-2 text-center mt-10">No communication logs recorded yet...</div>}
-            {logs.map((log, i) => (
+            {filteredLogs.length === 0 && <div className="text-slate-500 italic p-2 text-center mt-10">{filter === 'ALL' ? 'No communication logs recorded yet...' : `没有 ${filter} 日志`}</div>}
+            {filteredLogs.map((log, i) => (
             <div key={i} className={`flex items-start gap-2 p-1 rounded hover:bg-white/5 transition-colors ${log.direction === 'TX' ? 'text-amber-100/90' : log.direction === 'RX' ? 'text-emerald-100/90' : 'text-slate-400'}`}>
                 <span className="opacity-40 text-[10px] whitespace-nowrap w-16 text-right font-light">
                     {new Date(log.timestamp).toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}.{new Date(log.timestamp).getMilliseconds().toString().padStart(3, '0')}

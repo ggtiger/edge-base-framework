@@ -38,6 +38,7 @@ export function computeRelayrc(mode: Mode, wheels: Record<WheelId, boolean>): nu
 
 /**
  * 构建控制命令
+ * 格式: {QS|WQ}:Relay{bits}{QS|WQ}Angle{value}
  */
 export function buildCommand(
   mode: Exclude<Mode, null>,
@@ -46,11 +47,12 @@ export function buildCommand(
 ): string {
   const relayrc = computeRelayrc(mode, selectedWheels);
   const relayBinary = relayrc.toString(2);
-  return `${mode}:Relay${relayBinary}${pls}`;
+  return `${mode}:Relay${relayBinary}${mode}:${pls}`;
 }
 
 /**
  * 构建JOG点动命令
+ * 格式: {QS|WQ}:Relay{bits}{QS|WQ}JOG{±value}
  * @param mode 模式 QS/WQ
  * @param stepAngle 步距角度
  * @param direction 方向 '+' 或 '-'
@@ -65,7 +67,7 @@ export function buildJogCommand(
   const relayrc = computeRelayrc(mode, selectedWheels);
   const relayBinary = relayrc.toString(2);
   const angleValue = direction === '+' ? stepAngle : -stepAngle;
-  return `${mode}:Relay${relayBinary}JOG${angleValue.toFixed(2)}`;
+  return `${mode}:Relay${relayBinary}${mode}:JOG${angleValue.toFixed(2)}`;
 }
 
 /**

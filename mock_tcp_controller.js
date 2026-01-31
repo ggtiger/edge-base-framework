@@ -111,27 +111,27 @@ function parseCommand(raw) {
     };
   }
 
-  // 角度控制命令: {QS|WQ}:Relay{bits}Angle{value}
-  const angleMatch = cmd.match(/^(QS|WQ):Relay(\d+)Angle(-?[\d.]+)$/);
+  // 角度控制命令: {QS|WQ}:Relay{bits}{QS|WQ}:Angle{value}
+  const angleMatch = cmd.match(/^(QS|WQ):Relay(\d+)(QS|WQ):Angle(-?[\d.]+)$/);
   if (angleMatch) {
     return {
       kind: 'control',
       mode: angleMatch[1],
       relayBits: angleMatch[2],
       cmdType: 'angle',
-      angle: parseFloat(angleMatch[3]),
+      angle: parseFloat(angleMatch[4]),
     };
   }
 
-  // JOG点动命令: {QS|WQ}:Relay{bits}JOG{±value}
-  const jogMatch = cmd.match(/^(QS|WQ):Relay(\d+)JOG(-?[\d.]+)$/);
+  // JOG点动命令: {QS|WQ}:Relay{bits}{QS|WQ}:JOG{±value}
+  const jogMatch = cmd.match(/^(QS|WQ):Relay(\d+)(QS|WQ):JOG(-?[\d.]+)$/);
   if (jogMatch) {
     return {
       kind: 'control',
       mode: jogMatch[1],
       relayBits: jogMatch[2],
       cmdType: 'jog',
-      jogStep: parseFloat(jogMatch[3]),
+      jogStep: parseFloat(jogMatch[4]),
     };
   }
 
@@ -458,8 +458,8 @@ function startServer(port) {
       console.log('Mock TCP controller listening on ' + addr.address + ':' + addr.port);
       console.log('Protocol: TCP通信协议.md v1.1');
       console.log('Supported commands:');
-      console.log('  - {QS|WQ}:Relay{bits}Angle{value}  角度控制');
-      console.log('  - {QS|WQ}:Relay{bits}JOG{±step}    JOG点动');
+      console.log('  - {QS|WQ}:Relay{bits}{QS|WQ}:Angle{value}  角度控制');
+      console.log('  - {QS|WQ}:Relay{bits}{QS|WQ}:JOG{±step}    JOG点动');
       console.log('  - START_HOMING                     回原点');
       console.log('  - SYNC_STATUS                      状态同步');
       console.log('  - {QS|WQ}_ZERO                     零点校准');
