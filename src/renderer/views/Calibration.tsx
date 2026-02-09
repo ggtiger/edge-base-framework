@@ -695,6 +695,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
           mode={flow.mode}
           activeWheel={wheels.activeWheel}
           onSelectWheel={(w) => wheels.setActiveWheel(w)}
+          selectedWheels={wheels.selectedWheels}
           measurements={flow.measurements}
           onAction={handleAction}
           homingInProgress={flow.homingInProgress}

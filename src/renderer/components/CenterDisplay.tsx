@@ -22,6 +22,7 @@ interface CenterDisplayProps {
   mode: Mode;
   activeWheel: WheelId | null;
   onSelectWheel: (wheel: WheelId) => void;
+  selectedWheels: Record<WheelId, boolean>;
   measurements: Measurements;
   onAction: (action: CenterAction) => void;
   homingInProgress: boolean;
@@ -32,6 +33,7 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
   mode,
   activeWheel,
   onSelectWheel,
+  selectedWheels,
   measurements,
   onAction,
   homingInProgress,
@@ -45,24 +47,18 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
     { id: 'RR', label: '右后', icon: 'south_east' },
   ];
 
-  const formatAngle = (v: string) => {
-    if(mode === 'WQ'||!mode){
-        return '--.--°';
-    }
+  // 根据轮胎选中状态和模式格式化角度值
+  const formatAngleForWheel = (v: string, wheelId: WheelId, targetMode: 'QS' | 'WQ') => {
+    // 模式不匹配 或 模式未选择 → 显示占位
+    if (!mode || mode !== targetMode) return '--.--°';
+    // 轮胎未选中 → 显示占位
+    if (!selectedWheels[wheelId]) return '--.--°';
     const n = Number(v);
     if (Number.isFinite(n)) return `${n.toFixed(2)}°`;
     if (!v.trim()) return '--.--°';
     return `${v.trim()}°`;
   };
-  const wformatAngle = (v: string) => {
-      if(mode === 'QS'||!mode){
-        return '--.--°';
-      }
-      const n = Number(v);
-      if (Number.isFinite(n)) return `${n.toFixed(2)}°`;
-      if (!v.trim()) return '--.--°';
-      return `${v.trim()}°`;
-    };
+
   const frontLeft = mode === 'QS' ? measurements.qzq : mode === 'WQ' ? measurements.wzq : '';
   const frontRight = mode === 'QS' ? measurements.qyq : mode === 'WQ' ? measurements.wyq : '';
   const rearLeft = mode === 'QS' ? measurements.qzh : mode === 'WQ' ? measurements.wzh : '';
@@ -123,41 +119,41 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
             />
 
             {/* Overlays: Measurements */}
-            {/* Front */}
+            {/* Front - QS(前束) */}
             <div className="absolute top-[6px] inset-x-0 flex gap-24 justify-center z-20 pointer-events-none">
               <div className={numberBoxStyle}>
-                {formatAngle(frontLeft)}
+                {formatAngleForWheel(frontLeft, 'FL', 'QS')}
               </div>
               <div className={numberBoxStyle}>
-                {formatAngle(frontRight)}
+                {formatAngleForWheel(frontRight, 'FR', 'QS')}
               </div>
             </div>
 
-             {/* Wheel Indicators (Visual boxes near wheels) */}
+             {/* Wheel Indicators - WQ(外倾) */}
             <div className="absolute inset-y-0 left-[calc(16%_-_10px)] md:left-[calc(22%_-_10px)] flex flex-col justify-between py-[15%] md:py-[10%] pointer-events-none">
                 <div className={wheelBoxStyle}>
-                   {wformatAngle(frontLeft)}
+                   {formatAngleForWheel(frontLeft, 'FL', 'WQ')}
                 </div>
                 <div className={wheelBoxStyle}>
-                   {wformatAngle(rearLeft)}
+                   {formatAngleForWheel(rearLeft, 'RL', 'WQ')}
                 </div>
             </div>
             <div className="absolute inset-y-0 right-[calc(16%_-_10px)] md:right-[calc(22%_-_10px)] flex flex-col justify-between py-[15%] md:py-[10%] pointer-events-none">
                 <div className={wheelBoxStyle}>
-                  {wformatAngle(frontRight)}
+                  {formatAngleForWheel(frontRight, 'FR', 'WQ')}
                 </div>
                 <div className={wheelBoxStyle}>
-                  {wformatAngle(rearRight)}
+                  {formatAngleForWheel(rearRight, 'RR', 'WQ')}
                 </div>
             </div>
 
-            {/* Rear */}
+            {/* Rear - QS(前束) */}
             <div className="absolute bottom-[6px] inset-x-0 flex gap-24 justify-center z-20 pointer-events-none">
               <div className={numberBoxStyle}>
-                {formatAngle(rearLeft)}
+                {formatAngleForWheel(rearLeft, 'RL', 'QS')}
               </div>
               <div className={numberBoxStyle}>
-                {formatAngle(rearRight)}
+                {formatAngleForWheel(rearRight, 'RR', 'QS')}
               </div>
             </div>
 

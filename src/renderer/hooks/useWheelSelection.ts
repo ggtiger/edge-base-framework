@@ -13,7 +13,6 @@ export function useWheelSelection() {
   const toggleWheel = useCallback((wheel: WheelId, paramsLocked: boolean) => {
     if (paramsLocked) return;
     setSelectedWheels(prev => ({ ...prev, [wheel]: !prev[wheel] }));
-    setActiveWheel(wheel);
   }, []);
 
   const linkFront = useCallback((paramsLocked: boolean) => {
