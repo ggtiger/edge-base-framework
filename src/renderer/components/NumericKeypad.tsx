@@ -17,18 +17,24 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
   onConfirm
 }) => {
   const [value, setValue] = useState(initialValue);
+  const [isSelected, setIsSelected] = useState(true); // 新增：是否处于全选状态
 
   // Reset value when opening
   useEffect(() => {
     if (isOpen) {
       setValue(initialValue || '');
+      setIsSelected(true); // 打开时默认全选
     }
   }, [isOpen, initialValue]);
 
   if (!isOpen) return null;
 
   const handleNumber = (num: string) => {
-    if (value === '0' && num !== '.') {
+    if (isSelected) {
+      // 全选状态下，直接替换
+      setValue(num);
+      setIsSelected(false);
+    } else if (value === '0' && num !== '.') {
       setValue(num);
     } else {
       setValue(prev => prev + num);
@@ -36,20 +42,30 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
   };
 
   const handleBackspace = () => {
-    setValue(prev => prev.slice(0, -1));
+    if (isSelected) {
+      setValue('');
+      setIsSelected(false);
+    } else {
+      setValue(prev => prev.slice(0, -1));
+    }
   };
 
   const handleClear = () => {
     setValue('');
+    setIsSelected(false);
   };
 
   const handleDot = () => {
-    if (!value.includes('.')) {
+    if (isSelected) {
+      setValue('0.');
+      setIsSelected(false);
+    } else if (!value.includes('.')) {
       setValue(prev => (prev === '' ? '0.' : prev + '.'));
     }
   };
 
   const handleToggleSign = () => {
+    setIsSelected(false);
     if (!value) {
       setValue('-');
       return;
@@ -84,9 +100,13 @@ export const NumericKeypad: React.FC<NumericKeypadProps> = ({
           {/* Display */}
           <div className="mb-6 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/50 rounded-lg p-4 text-right relative overflow-hidden group">
             <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"></div>
-            <span className="text-2xl font-display font-bold tracking-wider text-slate-900 dark:text-white relative z-10">
-              {displayValue}
-              <span className="animate-pulse text-blue-500">_</span>
+            <span className={`text-2xl font-display font-bold tracking-wider relative z-10 transition-colors ${
+              isSelected && value 
+                ? 'bg-blue-500/20 dark:bg-blue-500/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded' 
+                : 'text-slate-900 dark:text-white'
+            }`}>
+              {displayValue || <span className="text-slate-400">0</span>}
+              {!isSelected && <span className="animate-pulse text-blue-500">_</span>}
             </span>
           </div>
 

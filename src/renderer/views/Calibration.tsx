@@ -21,6 +21,199 @@ import help2 from '../assets/help/ScreenShot_2.png';
 import help3 from '../assets/help/ScreenShot_3.png';
 import help4 from '../assets/help/ScreenShot_4.png';
 
+// 过渡动画组件
+const SplashTransition: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
+  const [progress, setProgress] = useState(0);
+  const [fadeOut, setFadeOut] = useState(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+
+  useEffect(() => {
+    // 进度条动画
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        return prev + Math.random() * 15 + 5;
+      });
+    }, 100);
+
+    // 1.5秒后开始淡出
+    const fadeTimer = setTimeout(() => {
+      setFadeOut(true);
+    }, 2500);
+
+    // 2秒后完成
+    const completeTimer = setTimeout(() => {
+      onCompleteRef.current();
+    }, 3000);
+
+    return () => {
+      clearInterval(progressInterval);
+      clearTimeout(fadeTimer);
+      clearTimeout(completeTimer);
+    };
+  }, []); // 移除依赖，使用 ref
+
+  return (
+    <div
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500 ${
+        fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      }`}
+    >
+      {/* 动态背景 */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+        {/* 网格线 */}
+        <div className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(59,130,246,0.3) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(59,130,246,0.3) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
+            animation: 'gridMove 20s linear infinite',
+          }}
+        />
+        
+        {/* 流动光线 */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-cyan-400/50 to-transparent animate-flow-down" />
+          <div className="absolute top-0 left-1/2 w-px h-full bg-gradient-to-b from-transparent via-blue-400/50 to-transparent animate-flow-down delay-1" />
+          <div className="absolute top-0 left-3/4 w-px h-full bg-gradient-to-b from-transparent via-indigo-400/50 to-transparent animate-flow-down delay-2" />
+        </div>
+        
+        {/* 动态光晕 */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-[100px] animate-float" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-500/30 rounded-full blur-[100px] animate-float-delay" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[120px] animate-pulse-slow" />
+        
+        {/* 粒子效果 */}
+        <div className="absolute inset-0">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-white/40 rounded-full animate-particle"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${3 + Math.random() * 4}s`,
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* 圆形波纹 */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="w-[400px] h-[400px] border border-cyan-500/20 rounded-full animate-ripple" />
+          <div className="absolute inset-0 w-[400px] h-[400px] border border-blue-500/20 rounded-full animate-ripple delay-1" />
+          <div className="absolute inset-0 w-[400px] h-[400px] border border-indigo-500/20 rounded-full animate-ripple delay-2" />
+        </div>
+      </div>
+
+      {/* 主内容 */}
+      <div className="relative z-10 text-center">
+        {/* 旋转 Logo */}
+        <div className="relative w-28 h-28 mx-auto mb-8">
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 animate-spin-slow opacity-60 blur-lg" />
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400 to-blue-400 animate-spin-reverse opacity-40 blur-md" />
+          <div className="absolute inset-3 rounded-full bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center shadow-2xl ring-2 ring-cyan-400/30">
+            <span className="material-icons text-5xl text-cyan-400 drop-shadow-[0_0_20px_rgba(34,211,238,0.9)] animate-pulse">
+              precision_manufacturing
+            </span>
+          </div>
+          {/* 多层旋转光环 */}
+          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-cyan-400 border-r-cyan-400/50 animate-spin" />
+          <div className="absolute inset-[-6px] rounded-full border-2 border-transparent border-b-blue-400 border-l-blue-400/50 animate-spin-reverse" />
+          <div className="absolute inset-[-12px] rounded-full border border-transparent border-t-indigo-400/30 animate-spin-slow" />
+        </div>
+
+        {/* 标题 */}
+        <h1 className="text-4xl font-display font-bold text-white tracking-[0.4em] mb-3 drop-shadow-[0_0_30px_rgba(34,211,238,0.5)]">
+          RUIPUXI
+        </h1>
+        <p className="text-sm text-cyan-200/90 tracking-[0.2em] mb-12 uppercase" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+          FOUR WHEEL ALIGNMENT CALIBRATION SYSTEM
+        </p>
+
+        {/* 进度条 */}
+        <div className="w-72 mx-auto">
+          <div className="h-2 bg-slate-800/80 rounded-full overflow-hidden backdrop-blur-sm border border-cyan-500/20">
+            <div
+              className="h-full bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 rounded-full transition-all duration-100 relative"
+              style={{ width: `${Math.min(progress, 100)}%` }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 rounded-full blur-sm" />
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
+            </div>
+          </div>
+          <p className="text-xs text-cyan-300/70 mt-4 tracking-wider animate-pulse">
+            正在初始化系统模块...
+          </p>
+        </div>
+      </div>
+
+      {/* 底部版权 */}
+      <div className="absolute bottom-6 text-xs text-cyan-300/40 tracking-wider" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+        © 2026 RUIPUXI TECHNOLOGY
+      </div>
+
+      <style>{`
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes spin-reverse {
+          from { transform: rotate(360deg); }
+          to { transform: rotate(0deg); }
+        }
+        @keyframes gridMove {
+          0% { transform: translate(0, 0); }
+          100% { transform: translate(50px, 50px); }
+        }
+        @keyframes flow-down {
+          0% { opacity: 0; transform: translateY(-100%); }
+          50% { opacity: 1; }
+          100% { opacity: 0; transform: translateY(100%); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(30px, -30px) scale(1.1); }
+        }
+        @keyframes float-delay {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-30px, 30px) scale(1.1); }
+        }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.2; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.4; transform: translate(-50%, -50%) scale(1.2); }
+        }
+        @keyframes particle {
+          0% { opacity: 0; transform: translateY(0) scale(0); }
+          50% { opacity: 1; transform: translateY(-50px) scale(1); }
+          100% { opacity: 0; transform: translateY(-100px) scale(0); }
+        }
+        @keyframes ripple {
+          0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+          100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+        .animate-spin-slow { animation: spin-slow 4s linear infinite; }
+        .animate-spin-reverse { animation: spin-reverse 3s linear infinite; }
+        .animate-flow-down { animation: flow-down 3s ease-in-out infinite; }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-float-delay { animation: float-delay 8s ease-in-out infinite; }
+        .animate-pulse-slow { animation: pulse-slow 4s ease-in-out infinite; }
+        .animate-particle { animation: particle 5s ease-in-out infinite; }
+        .animate-ripple { animation: ripple 4s ease-out infinite; }
+        .delay-1 { animation-delay: 1s; }
+        .delay-2 { animation-delay: 2s; }
+      `}</style>
+    </div>
+  );
+};
+
 interface CalibrationProps {
   onBack: () => void;
   theme: 'dark' | 'light';
@@ -30,6 +223,7 @@ interface CalibrationProps {
 const MAX_RETRIES = 10;
 
 const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme }) => {
+  const [showSplash, setShowSplash] = useState(true);
   const [time, setTime] = useState<string>('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
@@ -389,7 +583,11 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col font-sans tech-background text-slate-900 dark:text-slate-200 overflow-hidden relative">
+    <>
+      {/* 过渡动画 */}
+      {showSplash && <SplashTransition onComplete={() => setShowSplash(false)} />}
+      
+      <div className={`h-screen w-screen flex flex-col font-sans tech-background text-slate-900 dark:text-slate-200 overflow-hidden relative transition-opacity duration-300 ${showSplash ? 'opacity-0' : 'opacity-100'}`}>
       {tcp.showConnectionModal && (
         <ConnectionModal
           initialIp={tcp.connectionSettings.ip}
@@ -571,6 +769,7 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
         </div>
       </footer>
     </div>
+    </>
   );
 };
 
