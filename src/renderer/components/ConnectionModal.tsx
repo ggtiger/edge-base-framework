@@ -10,16 +10,16 @@ interface ConnectionModalProps {
 }
 
 export const ConnectionModal: React.FC<ConnectionModalProps> = ({ initialIp, initialPort, onConnect, onClose }) => {
-  const [ip, setIp] = useState(initialIp);
-  const [port, setPort] = useState(initialPort > 0 ? initialPort.toString() : '');
+  const [ip, setIp] = useState(initialIp || '192.168.4.1');
+  const [port, setPort] = useState(initialPort > 0 ? initialPort.toString() : '10001');
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   
   const { status: netStatus, settingIp, checkNetwork, setLocalIp } = useNetworkCheck();
 
   // Update local state if props change
   useEffect(() => {
-    setIp(initialIp);
-    setPort(initialPort > 0 ? initialPort.toString() : '');
+    setIp(initialIp || '192.168.4.1');
+    setPort(initialPort > 0 ? initialPort.toString() : '10001');
   }, [initialIp, initialPort]);
 
   // 打开诊断时自动检查网络
@@ -33,9 +33,18 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({ initialIp, ini
     e.preventDefault();
     const portNum = parseInt(port, 10);
     const safeIp = ip.trim();
-    if (safeIp && !isNaN(portNum)) {
-      onConnect(safeIp, portNum);
+    
+    // Validation: IP and port are required
+    if (!safeIp) {
+      alert('请输入 IP 地址');
+      return;
     }
+    if (!port || isNaN(portNum) || portNum <= 0 || portNum > 65535) {
+      alert('请输入有效的端口号 (1-65535)');
+      return;
+    }
+    
+    onConnect(safeIp, portNum);
   };
 
   const handleSetIp = async () => {

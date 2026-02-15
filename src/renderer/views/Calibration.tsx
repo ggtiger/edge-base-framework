@@ -758,12 +758,16 @@ const Calibration: React.FC<CalibrationProps> = ({ onBack, theme, onToggleTheme 
         </div>
 
         <div className="flex items-center gap-4 font-display tracking-wide shrink-0">
-          <div className="hidden md:flex items-center gap-2 opacity-70">
+          <button
+            onClick={() => tcp.setShowConnectionModal(true)}
+            className="hidden md:flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity cursor-pointer px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95"
+            title="点击设置连接"
+          >
             <span className="material-icons text-[10px]">my_location</span>
             <span>
               IP：{displayedIp}:{tcp.connectionSettings.port}
             </span>
-          </div>
+          </button>
           <div className="text-slate-600 dark:text-slate-500 w-32 sm:w-48 text-right truncate">
             {time || 'INITIALIZING...'}
           </div>
