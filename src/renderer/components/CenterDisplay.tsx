@@ -79,24 +79,6 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
   return (
     <div className="col-span-6 flex flex-col h-full min-h-0">
       <GlassPanel className="flex flex-col h-full min-h-0 overflow-hidden relative border border-slate-200 dark:border-white/5 shadow-2xl">
-        {/* Top Wheel Selectors */}
-        <div className="grid grid-cols-4 gap-2 p-3 bg-white/40 dark:bg-slate-800/40 border-b border-white/20 dark:border-white/5 backdrop-blur-md z-20 flex-shrink-0 shadow-sm">
-          {wheels.map((wheel) => (
-            <button
-              key={wheel.id}
-              onClick={() => onSelectWheel(wheel.id)}
-              className={`flex items-center justify-center py-2 border rounded text-xs font-bold tracking-wide transition-all active:scale-95 backdrop-blur-md ring-1 ring-inset gap-2
-                ${activeWheel === wheel.id 
-                  ? 'bg-gradient-to-b from-blue-500 to-blue-600 text-white border-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.5)] ring-white/50' 
-                  : 'bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 text-slate-900 dark:text-slate-400 border-slate-400 dark:border-slate-600 shadow-lg ring-white/80 dark:ring-white/20 hover:shadow-blue-500/20 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-white'
-                }`}
-            >
-              <span className="material-icons text-base">{wheel.icon}</span>
-              {wheel.label}
-            </button>
-          ))}
-        </div>
-
         {/* Main Visualization Area */}
         <div className="flex-grow flex items-center justify-center p-4 relative overflow-hidden group min-h-0">
           {/* Grid Background */}
@@ -161,14 +143,7 @@ export const CenterDisplay: React.FC<CenterDisplayProps> = ({
         </div>
 
         {/* Bottom Actions */}
-        <div className="grid grid-cols-3 gap-2 p-3 bg-white/40 dark:bg-slate-800/40 border-t border-white/20 dark:border-white/5 backdrop-blur-md z-20 flex-shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-          <button
-            onClick={() => onAction('hm')}
-            className="flex items-center justify-center py-2 bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded text-xs font-bold text-slate-900 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset ring-white/60 dark:ring-white/10 hover:shadow-blue-500/20 transition-all gap-1"
-          >
-            <span className="material-icons text-sm">restart_alt</span>
-            外倾复位
-          </button>
+        <div className="grid grid-cols-2 gap-2 p-3 bg-white/40 dark:bg-slate-800/40 border-t border-white/20 dark:border-white/5 backdrop-blur-md z-20 flex-shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
           <button
             onClick={() => homingInProgress ? onCancelHoming?.() : onAction('homing')}
             className={`flex items-center justify-center py-2 border rounded text-xs font-bold shadow-lg active:scale-95 backdrop-blur-md ring-1 ring-inset transition-all gap-1 ${
