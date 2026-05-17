@@ -78,46 +78,58 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             {/* Status Grid - 2x2 */}
             <div className="grid grid-cols-2 gap-2">
                 {/* System */}
-                <div className="bg-white/40 dark:bg-slate-800/40 rounded-lg p-2 border border-white/20 dark:border-white/5 backdrop-blur-md shadow-inner flex items-center gap-2">
-                    <span className="relative flex h-2 w-2 shrink-0">
+                <div className={`rounded-lg p-2.5 border backdrop-blur-md shadow-sm flex items-center gap-2.5 transition-all ${
+                  systemOnline 
+                    ? 'bg-emerald-50/80 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-500/30 shadow-emerald-100 dark:shadow-emerald-900/20' 
+                    : 'bg-red-50/80 dark:bg-red-900/20 border-red-200 dark:border-red-500/30 shadow-red-100 dark:shadow-red-900/20'
+                }`}>
+                    <span className="relative flex h-2.5 w-2.5 shrink-0">
                         {systemOnline ? (
                           <>
                             <span className={`absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 ${trafficPulse ? 'animate-ping' : ''}`}></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                           </>
                         ) : (
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
                         )}
                     </span>
-                    <span className={`text-[9px] font-bold ${systemOnline ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
+                    <span className={`text-[10px] font-extrabold tracking-wide ${systemOnline ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
                       {systemOnline ? 'ONLINE' : 'OFFLINE'}
                     </span>
                 </div>
 
                 {/* Link */}
-                <div className="bg-white/40 dark:bg-slate-800/40 rounded-lg p-2 border border-white/20 dark:border-white/5 backdrop-blur-md shadow-inner flex items-center gap-2">
-                    <span className={`material-icons text-[10px] ${linkStable ? 'text-blue-600 dark:text-blue-500' : 'text-slate-500 dark:text-slate-600'}`}>sensors</span>
-                    <span className={`text-[9px] font-bold ${linkStable ? 'text-blue-800 dark:text-blue-400' : 'text-slate-900 dark:text-slate-500'}`}>
+                <div className={`rounded-lg p-2.5 border backdrop-blur-md shadow-sm flex items-center gap-2.5 transition-all ${
+                  linkStable 
+                    ? 'bg-blue-50/80 dark:bg-blue-900/20 border-blue-200 dark:border-blue-500/30 shadow-blue-100 dark:shadow-blue-900/20' 
+                    : 'bg-white/40 dark:bg-slate-800/40 border-slate-200 dark:border-white/5'
+                }`}>
+                    <span className={`material-icons text-sm ${linkStable ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600'}`}>sensors</span>
+                    <span className={`text-[10px] font-extrabold tracking-wide ${linkStable ? 'text-blue-700 dark:text-blue-400' : 'text-slate-500 dark:text-slate-500'}`}>
                       {linkStable ? 'ACTIVE' : 'IDLE'}
                     </span>
                 </div>
 
                 {/* 传感器 */}
-                <div className="bg-white/40 dark:bg-slate-800/40 rounded-lg p-2 border border-white/20 dark:border-white/5 backdrop-blur-md shadow-inner flex items-center gap-2">
-                    <span className="text-[8px] text-slate-500 dark:text-slate-400 font-bold shrink-0">SENSOR</span>
-                    <div className="flex gap-1">
+                <div className="bg-white/60 dark:bg-slate-800/40 rounded-lg p-2.5 border border-slate-200 dark:border-white/10 backdrop-blur-md shadow-sm flex items-center gap-2.5">
+                    <span className="text-[9px] text-slate-600 dark:text-slate-400 font-extrabold shrink-0 tracking-wide">SENSOR</span>
+                    <div className="flex gap-1.5">
                         {sensorStatus.map((ok, i) => (
-                            <div key={i} className={`w-2 h-2 rounded-full ${ok ? 'bg-emerald-500' : 'bg-red-500'}`} title={sensorLabels[i]}></div>
+                            <div key={i} className={`w-2.5 h-2.5 rounded-full shadow-sm ${ok ? 'bg-emerald-500 shadow-emerald-300' : 'bg-red-500 shadow-red-300'}`} title={sensorLabels[i]}></div>
                         ))}
                     </div>
                 </div>
 
                 {/* 回原点 */}
-                <div className="bg-white/40 dark:bg-slate-800/40 rounded-lg p-2 border border-white/20 dark:border-white/5 backdrop-blur-md shadow-inner flex items-center gap-2">
-                    <span className={`text-[8px] text-slate-500 dark:text-slate-400 font-bold shrink-0 ${homingInProgress ? 'animate-pulse text-amber-500' : ''}`}>HOME</span>
-                    <div className="flex gap-1">
+                <div className={`rounded-lg p-2.5 border backdrop-blur-md shadow-sm flex items-center gap-2.5 transition-all ${
+                  homingInProgress 
+                    ? 'bg-amber-50/80 dark:bg-amber-900/20 border-amber-200 dark:border-amber-500/30' 
+                    : 'bg-white/60 dark:bg-slate-800/40 border-slate-200 dark:border-white/10'
+                }`}>
+                    <span className={`text-[9px] font-extrabold shrink-0 tracking-wide ${homingInProgress ? 'animate-pulse text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-400'}`}>HOME</span>
+                    <div className="flex gap-1.5">
                         {homingStatus.map((status, i) => (
-                            <div key={i} className={`w-2 h-2 rounded-full ${getHomingColor(status)}`} title={homingLabels[i]}></div>
+                            <div key={i} className={`w-2.5 h-2.5 rounded-full shadow-sm ${getHomingColor(status)}`} title={homingLabels[i]}></div>
                         ))}
                     </div>
                 </div>
